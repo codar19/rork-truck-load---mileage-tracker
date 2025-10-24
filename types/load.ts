@@ -16,6 +16,9 @@ export interface Load {
   id: string;
   status: LoadStatus;
   
+  driverId: string;
+  dispatchId: string;
+  
   dispatcherText: string;
   
   origin: string;

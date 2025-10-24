@@ -1,4 +1,5 @@
 import { useLoads } from '@/contexts/LoadContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { Sparkles, Package } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -32,6 +33,7 @@ export default function AddLoadScreen() {
   const [odometerReading, setOdometerReading] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const { addLoad } = useLoads();
+  const { user } = useAuth();
   const router = useRouter();
 
   const handleParse = async () => {
@@ -60,8 +62,15 @@ export default function AddLoadScreen() {
 
       console.log('Parsed load data:', parsed);
 
+      if (!user) {
+        Alert.alert('Error', 'User not authenticated');
+        return;
+      }
+
       const loadId = addLoad({
         dispatcherText: dispatcherText.trim(),
+        driverId: user.id,
+        dispatchId: user.dispatchId || user.id,
         origin: parsed.origin,
         destination: parsed.destination,
         claimedMiles: parsed.claimedMiles,

@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Load, LoadCalculations } from '@/types/load';
+import { MOCK_LOADS } from '@/mocks/loads';
 
 const STORAGE_KEY = 'loads';
 const FIXED_MILEAGE_SURCHARGE = 0.15;
@@ -17,7 +18,11 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     queryKey: ['loads'],
     queryFn: async () => {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_LOADS));
+      return MOCK_LOADS;
     }
   });
 
@@ -28,6 +33,8 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     }
   });
 
+  const { mutate } = saveMutation;
+
   useEffect(() => {
     if (loadsQuery.data) {
       setLoads(loadsQuery.data);
@@ -36,8 +43,8 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
 
   const saveLoads = useCallback((updatedLoads: Load[]) => {
     setLoads(updatedLoads);
-    saveMutation.mutate(updatedLoads);
-  }, []);
+    mutate(updatedLoads);
+  }, [mutate]);
 
   const addLoad = useCallback((load: Omit<Load, 'id' | 'createdAt'>) => {
     const newLoad: Load = {
