@@ -1,8 +1,18 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useSettings } from '@/contexts/SettingsContext';
-import { useRouter } from 'expo-router';
-import { Settings as SettingsIcon, ChevronLeft, CreditCard, Home } from 'lucide-react-native';
-import React, { useState, useEffect } from 'react';
+import { useRouter, Redirect } from 'expo-router';
+import { 
+  Settings as SettingsIcon, 
+  ChevronLeft, 
+  Monitor, 
+  CreditCard, 
+  Briefcase,
+  ChevronRight,
+  User,
+  Bell,
+  Shield,
+  Database
+} from 'lucide-react-native';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,48 +20,84 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Switch,
-  TextInput,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+interface SettingsMenuItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  route: string;
+  color: string;
+}
 
 export default function SettingsScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const { settings, updateSettings, isLoading } = useSettings();
-
-  const [showHeroAsHomepage, setShowHeroAsHomepage] = useState<boolean>(false);
-  const [showQuickLoginPage, setShowQuickLoginPage] = useState<boolean>(true);
-  const [showQuickLoginOnHero, setShowQuickLoginOnHero] = useState<boolean>(true);
-  const [stripePublishableKey, setStripePublishableKey] = useState<string>('');
-  const [stripeSecretKey, setStripeSecretKey] = useState<string>('');
-
-  useEffect(() => {
-    if (!isLoading && settings) {
-      setShowHeroAsHomepage(settings.showHeroAsHomepage);
-      setShowQuickLoginPage(settings.showQuickLoginPage);
-      setShowQuickLoginOnHero(settings.showQuickLoginOnHero);
-      setStripePublishableKey(settings.stripePublishableKey);
-      setStripeSecretKey(settings.stripeSecretKey);
-    }
-  }, [settings, isLoading]);
-
-  const handleSave = () => {
-    updateSettings({
-      showHeroAsHomepage,
-      showQuickLoginPage,
-      showQuickLoginOnHero,
-      stripePublishableKey,
-      stripeSecretKey,
-    });
-    Alert.alert('Success', 'Settings saved successfully!');
-  };
 
   if (user?.role !== 'admin') {
-    router.replace('/dashboard');
-    return null;
+    return <Redirect href="/dashboard" />;
   }
+
+  const menuItems: SettingsMenuItem[] = [
+    {
+      id: 'screens',
+      title: 'Screens',
+      description: 'Manage app screens and their visibility',
+      icon: <Monitor size={24} color="#3b82f6" />,
+      route: '/settings/screens',
+      color: '#3b82f6',
+    },
+    {
+      id: 'stripe',
+      title: 'Stripe',
+      description: 'Configure payment processing',
+      icon: <CreditCard size={24} color="#22c55e" />,
+      route: '/settings/stripe',
+      color: '#22c55e',
+    },
+    {
+      id: 'business',
+      title: 'Business Model',
+      description: 'Track features and requirements',
+      icon: <Briefcase size={24} color="#f59e0b" />,
+      route: '/settings/business',
+      color: '#f59e0b',
+    },
+    {
+      id: 'users',
+      title: 'User Management',
+      description: 'Manage users and permissions',
+      icon: <User size={24} color="#8b5cf6" />,
+      route: '/settings/users',
+      color: '#8b5cf6',
+    },
+    {
+      id: 'notifications',
+      title: 'Notifications',
+      description: 'Configure notification settings',
+      icon: <Bell size={24} color="#ec4899" />,
+      route: '/settings/notifications',
+      color: '#ec4899',
+    },
+    {
+      id: 'security',
+      title: 'Security',
+      description: 'Security and authentication settings',
+      icon: <Shield size={24} color="#ef4444" />,
+      route: '/settings/security',
+      color: '#ef4444',
+    },
+    {
+      id: 'database',
+      title: 'Database',
+      description: 'Backup and data management',
+      icon: <Database size={24} color="#06b6d4" />,
+      route: '/settings/database',
+      color: '#06b6d4',
+    },
+  ];
 
   return (
     <View style={styles.container}>
@@ -63,150 +109,60 @@ export default function SettingsScreen() {
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <SettingsIcon size={24} color="#f59e0b" />
-            <Text style={styles.headerTitle}>App Settings</Text>
+            <Text style={styles.headerTitle}>Settings</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
       </SafeAreaView>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Home size={20} color="#3b82f6" />
-            <Text style={styles.sectionTitle}>Homepage Settings</Text>
-          </View>
-          <Text style={styles.sectionDescription}>
-            Control which page users see when they first visit the app
-          </Text>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.subtitle}>
+          Manage your app configuration and settings
+        </Text>
 
-          <View style={styles.settingCard}>
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Show Hero Page as Homepage</Text>
-                <Text style={styles.settingDescription}>
-                  When enabled, unauthenticated users will see the hero page with pricing. 
-                  When disabled, they&apos;ll be redirected to login.
-                </Text>
-                {showHeroAsHomepage && (
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>Currently Active</Text>
-                  </View>
-                )}
+        <View style={styles.menuList}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.menuItem,
+                index === menuItems.length - 1 && styles.menuItemLast,
+              ]}
+              onPress={() => router.push(item.route as any)}
+              testID={`settings-menu-${item.id}`}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
+                  {item.icon}
+                </View>
+                <View style={styles.menuItemText}>
+                  <Text style={styles.menuItemTitle}>{item.title}</Text>
+                  <Text style={styles.menuItemDescription}>{item.description}</Text>
+                </View>
               </View>
-              <Switch
-                value={showHeroAsHomepage}
-                onValueChange={setShowHeroAsHomepage}
-                trackColor={{ false: '#334155', true: '#f59e0b' }}
-                thumbColor={showHeroAsHomepage ? '#ffffff' : '#94a3b8'}
-                testID="hero-homepage-toggle"
-              />
-            </View>
-          </View>
-
-          <View style={styles.settingCard}>
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Show Quick Login Page</Text>
-                <Text style={styles.settingDescription}>
-                  Controls whether the Quick Login development page is accessible.
-                </Text>
-              </View>
-              <Switch
-                value={showQuickLoginPage}
-                onValueChange={setShowQuickLoginPage}
-                trackColor={{ false: '#334155', true: '#f59e0b' }}
-                thumbColor={showQuickLoginPage ? '#ffffff' : '#94a3b8'}
-                testID="quick-login-page-toggle"
-              />
-            </View>
-          </View>
-
-          <View style={styles.settingCard}>
-            <View style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingLabel}>Show Quick Login on Hero Page</Text>
-                <Text style={styles.settingDescription}>
-                  When enabled, Quick Login buttons will appear on the Hero page for easy testing.
-                </Text>
-              </View>
-              <Switch
-                value={showQuickLoginOnHero}
-                onValueChange={setShowQuickLoginOnHero}
-                trackColor={{ false: '#334155', true: '#f59e0b' }}
-                thumbColor={showQuickLoginOnHero ? '#ffffff' : '#94a3b8'}
-                testID="quick-login-hero-toggle"
-              />
-            </View>
-          </View>
+              <ChevronRight size={20} color="#64748b" />
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <CreditCard size={20} color="#22c55e" />
-            <Text style={styles.sectionTitle}>Stripe Configuration</Text>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>System Information</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>App Version:</Text>
+            <Text style={styles.infoValue}>1.0.0</Text>
           </View>
-          <Text style={styles.sectionDescription}>
-            Configure your Stripe API keys for payment processing
-          </Text>
-
-          <View style={styles.settingCard}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Stripe Publishable Key</Text>
-              <Text style={styles.inputHint}>
-                Starts with pk_test_ or pk_live_
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={stripePublishableKey}
-                onChangeText={setStripePublishableKey}
-                placeholder="pk_live_..."
-                placeholderTextColor="#475569"
-                autoCapitalize="none"
-                autoCorrect={false}
-                testID="stripe-publishable-key-input"
-              />
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Stripe Secret Key</Text>
-              <Text style={styles.inputHint}>
-                Starts with sk_test_ or sk_live_ (Keep this secure!)
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={stripeSecretKey}
-                onChangeText={setStripeSecretKey}
-                placeholder="sk_live_..."
-                placeholderTextColor="#475569"
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                testID="stripe-secret-key-input"
-              />
-            </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Build:</Text>
+            <Text style={styles.infoValue}>Production</Text>
           </View>
-
-          <View style={styles.warningBox}>
-            <Text style={styles.warningText}>
-              🔒 Your Stripe keys are stored locally and encrypted. Never share your secret key.
-            </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Logged in as:</Text>
+            <Text style={styles.infoValue}>{user?.email}</Text>
           </View>
-        </View>
-
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave} testID="save-settings-button">
-          <Text style={styles.saveButtonText}>Save Settings</Text>
-        </TouchableOpacity>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Need Help?</Text>
-          <Text style={styles.infoText}>
-            • Get your Stripe API keys from stripe.com/dashboard{'\n'}
-            • Use test keys during development{'\n'}
-            • The hero page will only show when enabled and user is not authenticated{'\n'}
-            • Changes take effect immediately after saving
-          </Text>
         </View>
       </ScrollView>
     </View>
@@ -252,133 +208,84 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  section: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#f1f5f9',
-  },
-  sectionDescription: {
+  subtitle: {
     fontSize: 14,
     color: '#94a3b8',
-    marginBottom: 16,
-    lineHeight: 20,
+    marginBottom: 24,
+    textAlign: 'center',
   },
-  settingCard: {
+  menuList: {
     backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#334155',
+    overflow: 'hidden',
   },
-  settingRow: {
+  menuItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  menuItemLast: {
+    borderBottomWidth: 0,
+  },
+  menuItemLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 16,
   },
-  settingInfo: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#f1f5f9',
-    marginBottom: 6,
-  },
-  settingDescription: {
-    fontSize: 13,
-    color: '#94a3b8',
-    lineHeight: 18,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    backgroundColor: '#22c55e',
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    color: '#ffffff',
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  inputLabel: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: '#f1f5f9',
-  },
-  inputHint: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  input: {
-    backgroundColor: '#0f172a',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: '#f1f5f9',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#334155',
-    marginVertical: 20,
-  },
-  warningBox: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: '#422006',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#f59e0b',
-  },
-  warningText: {
-    fontSize: 12,
-    color: '#fbbf24',
-    lineHeight: 18,
-  },
-  saveButton: {
-    backgroundColor: '#f59e0b',
-    paddingVertical: 16,
+  iconContainer: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'center',
   },
-  saveButtonText: {
+  menuItemText: {
+    flex: 1,
+    gap: 4,
+  },
+  menuItemTitle: {
     fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#ffffff',
+    fontWeight: '600' as const,
+    color: '#f1f5f9',
   },
-  infoSection: {
+  menuItemDescription: {
+    fontSize: 13,
+    color: '#64748b',
+    lineHeight: 18,
+  },
+  infoCard: {
+    marginTop: 24,
     backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
     borderColor: '#334155',
+    gap: 12,
   },
   infoTitle: {
     fontSize: 16,
     fontWeight: '600' as const,
     color: '#f1f5f9',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  infoText: {
-    fontSize: 13,
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 14,
     color: '#94a3b8',
-    lineHeight: 20,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#f1f5f9',
+    fontWeight: '600' as const,
   },
 });

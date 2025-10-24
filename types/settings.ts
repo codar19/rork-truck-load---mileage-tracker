@@ -4,4 +4,5 @@ export interface AppSettings {
   showQuickLoginOnHero: boolean;
   stripePublishableKey: string;
   stripeSecretKey: string;
+  webhookSecret?: string;
 }
