@@ -1,27 +1,33 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettings } from '@/contexts/SettingsContext';
-import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useRouter, useNavigationContainerRef } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function IndexScreen() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { settings, isLoading: settingsLoading } = useSettings();
   const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !settingsLoading) {
-      if (isAuthenticated) {
-        router.replace('/dashboard');
-      } else {
-        if (settings.showHeroAsHomepage) {
-          router.replace('/hero');
+    if (!authLoading && !settingsLoading && !hasNavigated && navigationRef?.isReady()) {
+      setHasNavigated(true);
+      
+      setTimeout(() => {
+        if (isAuthenticated) {
+          router.replace('/dashboard');
         } else {
-          router.replace('/login');
+          if (settings.showHeroAsHomepage) {
+            router.replace('/hero');
+          } else {
+            router.replace('/login');
+          }
         }
-      }
+      }, 0);
     }
-  }, [isAuthenticated, authLoading, settingsLoading, settings, router]);
+  }, [isAuthenticated, authLoading, settingsLoading, settings, router, navigationRef, hasNavigated]);
 
   return (
     <View style={styles.container}>
