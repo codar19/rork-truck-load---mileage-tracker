@@ -22,12 +22,16 @@ export default function SettingsScreen() {
   const { settings, updateSettings, isLoading } = useSettings();
 
   const [showHeroAsHomepage, setShowHeroAsHomepage] = useState<boolean>(false);
+  const [showQuickLoginPage, setShowQuickLoginPage] = useState<boolean>(true);
+  const [showQuickLoginOnHero, setShowQuickLoginOnHero] = useState<boolean>(true);
   const [stripePublishableKey, setStripePublishableKey] = useState<string>('');
   const [stripeSecretKey, setStripeSecretKey] = useState<string>('');
 
   useEffect(() => {
     if (!isLoading && settings) {
       setShowHeroAsHomepage(settings.showHeroAsHomepage);
+      setShowQuickLoginPage(settings.showQuickLoginPage);
+      setShowQuickLoginOnHero(settings.showQuickLoginOnHero);
       setStripePublishableKey(settings.stripePublishableKey);
       setStripeSecretKey(settings.stripeSecretKey);
     }
@@ -36,6 +40,8 @@ export default function SettingsScreen() {
   const handleSave = () => {
     updateSettings({
       showHeroAsHomepage,
+      showQuickLoginPage,
+      showQuickLoginOnHero,
       stripePublishableKey,
       stripeSecretKey,
     });
@@ -93,6 +99,42 @@ export default function SettingsScreen() {
                 trackColor={{ false: '#334155', true: '#f59e0b' }}
                 thumbColor={showHeroAsHomepage ? '#ffffff' : '#94a3b8'}
                 testID="hero-homepage-toggle"
+              />
+            </View>
+          </View>
+
+          <View style={styles.settingCard}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingLabel}>Show Quick Login Page</Text>
+                <Text style={styles.settingDescription}>
+                  Controls whether the Quick Login development page is accessible.
+                </Text>
+              </View>
+              <Switch
+                value={showQuickLoginPage}
+                onValueChange={setShowQuickLoginPage}
+                trackColor={{ false: '#334155', true: '#f59e0b' }}
+                thumbColor={showQuickLoginPage ? '#ffffff' : '#94a3b8'}
+                testID="quick-login-page-toggle"
+              />
+            </View>
+          </View>
+
+          <View style={styles.settingCard}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingLabel}>Show Quick Login on Hero Page</Text>
+                <Text style={styles.settingDescription}>
+                  When enabled, Quick Login buttons will appear on the Hero page for easy testing.
+                </Text>
+              </View>
+              <Switch
+                value={showQuickLoginOnHero}
+                onValueChange={setShowQuickLoginOnHero}
+                trackColor={{ false: '#334155', true: '#f59e0b' }}
+                thumbColor={showQuickLoginOnHero ? '#ffffff' : '#94a3b8'}
+                testID="quick-login-hero-toggle"
               />
             </View>
           </View>

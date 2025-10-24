@@ -20,6 +20,7 @@ function RootLayoutNav() {
       <Stack.Screen name="hero" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="analytics" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="add-load" options={{ title: "Add New Load", presentation: "modal" }} />
       <Stack.Screen name="load/[id]" options={{ title: "Load Details" }} />

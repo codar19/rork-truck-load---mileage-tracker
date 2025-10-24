@@ -3,6 +3,7 @@ import { useLoads } from '@/contexts/LoadContext';
 import { MOCK_DISPATCHERS, MOCK_DRIVERS, ALL_USERS } from '@/mocks/users';
 import { useRouter } from 'expo-router';
 import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings } from 'lucide-react-native';
+import FooterNav from '@/components/FooterNav';
 import React, { useMemo } from 'react';
 import {
   StyleSheet,
@@ -208,6 +209,8 @@ export default function AdminDashboard() {
           ))}
         </View>
       </ScrollView>
+
+      <FooterNav />
     </View>
   );
 }
@@ -260,7 +263,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   section: {
     marginBottom: 32,

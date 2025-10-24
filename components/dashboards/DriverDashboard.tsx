@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
 import { useRouter } from 'expo-router';
 import { Truck, Plus, Package, MapPin, LogOut, DollarSign, TrendingUp } from 'lucide-react-native';
+import FooterNav from '@/components/FooterNav';
 import React, { useMemo } from 'react';
 import {
   StyleSheet,
@@ -188,6 +189,8 @@ export default function DriverDashboard() {
           <Text style={styles.fabText}>Add Load</Text>
         </TouchableOpacity>
       </SafeAreaView>
+
+      <FooterNav />
     </View>
   );
 }
@@ -260,7 +263,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 160,
   },
   section: {
     marginBottom: 24,

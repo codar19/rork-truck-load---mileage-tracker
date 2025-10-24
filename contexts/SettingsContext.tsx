@@ -8,6 +8,8 @@ const STORAGE_KEY = 'app_settings';
 
 const DEFAULT_SETTINGS: AppSettings = {
   showHeroAsHomepage: false,
+  showQuickLoginPage: true,
+  showQuickLoginOnHero: true,
   stripePublishableKey: '',
   stripeSecretKey: '',
 };

@@ -7,6 +7,7 @@ import {
   FileText,
   Fuel,
   Calendar,
+  Receipt,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -32,6 +33,7 @@ export default function LoadDetailScreen() {
   const [fuelPrice, setFuelPrice] = useState('');
   const [daysUsed, setDaysUsed] = useState('');
   const [dailyCost, setDailyCost] = useState('');
+  const [tolls, setTolls] = useState('');
 
   if (!load) {
     return (
@@ -144,6 +146,15 @@ export default function LoadDetailScreen() {
 
     if (dailyCost) {
       updates.dailyTruckCost = dailyTruckCost;
+    }
+
+    if (tolls) {
+      const tollsAmount = Number(tolls);
+      if (!tollsAmount || tollsAmount < 0) {
+        Alert.alert('Error', 'Please enter valid tolls amount');
+        return;
+      }
+      updates.tolls = tollsAmount;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -322,6 +333,26 @@ export default function LoadDetailScreen() {
             <Text style={styles.currentValue}>
               Current: {load.daysUsed} days @ ${load.dailyTruckCost.toFixed(2)} = $
               {(load.daysUsed * load.dailyTruckCost).toFixed(2)}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.expenseInputGroup}>
+          <View style={styles.labelRow}>
+            <Receipt size={16} color="#f59e0b" />
+            <Text style={styles.inputLabel}>Tolls</Text>
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Total tolls amount"
+            placeholderTextColor="#64748b"
+            value={tolls}
+            onChangeText={setTolls}
+            keyboardType="numeric"
+          />
+          {load.tolls !== undefined && (
+            <Text style={styles.currentValue}>
+              Current: ${load.tolls.toFixed(2)}
             </Text>
           )}
         </View>

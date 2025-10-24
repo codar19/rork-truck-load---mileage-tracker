@@ -34,6 +34,7 @@ export interface Load {
   fuel?: FuelExpense;
   daysUsed?: number;
   dailyTruckCost?: number;
+  tolls?: number;
   
   createdAt: string;
   completedAt?: string;

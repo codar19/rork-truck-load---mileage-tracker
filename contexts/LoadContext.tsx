@@ -102,7 +102,9 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     
     const adminCosts = daysUsed * DAILY_ADMIN_COST;
     
-    const totalExpenses = fuelCost + mileageSurcharge + dailyCosts + adminCosts;
+    const tolls = load.tolls || 0;
+    
+    const totalExpenses = fuelCost + mileageSurcharge + dailyCosts + adminCosts + tolls;
     
     const grossPay = load.payAmount;
     const netProfit = grossPay - totalExpenses;
