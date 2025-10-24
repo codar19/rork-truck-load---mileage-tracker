@@ -24,6 +24,7 @@ function RootLayoutNav() {
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="add-load" options={{ title: "Add New Load", presentation: "modal" }} />
       <Stack.Screen name="load/[id]" options={{ title: "Load Details" }} />
+      <Stack.Screen name="suggestion/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

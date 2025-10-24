@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
 import { MOCK_DISPATCHERS, MOCK_DRIVERS, ALL_USERS } from '@/mocks/users';
 import { useRouter } from 'expo-router';
-import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings, CheckCircle, Circle, AlertCircle } from 'lucide-react-native';
+import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings, CheckCircle, Circle, AlertCircle, Lightbulb, ArrowRight } from 'lucide-react-native';
 import FooterNav from '@/components/FooterNav';
 import React, { useMemo, useState } from 'react';
 import {
@@ -14,6 +14,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SYSTEM_SUGGESTIONS } from '@/mocks/suggestions';
 
 type FeatureStatus = 'done' | 'pending' | 'blocked';
 type Feature = {
@@ -55,7 +56,7 @@ const GOOD_TO_HAVE_FEATURES: Feature[] = [
   { id: 'driver-chat', title: 'In-app Chat (Driver-Dispatcher)', status: 'blocked', note: 'Need: Real-time messaging service (Firebase, Pusher, or custom WebSocket server)' },
 ];
 
-type TabType = 'overview' | 'must-have' | 'good-to-have';
+type TabType = 'overview' | 'must-have' | 'good-to-have' | 'suggestions';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -207,6 +208,15 @@ export default function AdminDashboard() {
           <Text style={[styles.tabText, activeTab === 'good-to-have' && styles.activeTabText]}>Good-to-Have</Text>
           <View style={styles.tabBadge}>
             <Text style={styles.tabBadgeText}>{goodToHaveStats.done}/{goodToHaveStats.total}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'suggestions' && styles.activeTab]}
+          onPress={() => setActiveTab('suggestions')}
+        >
+          <Text style={[styles.tabText, activeTab === 'suggestions' && styles.activeTabText]}>Suggestions</Text>
+          <View style={styles.tabBadge}>
+            <Text style={styles.tabBadgeText}>{SYSTEM_SUGGESTIONS.length}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -369,6 +379,67 @@ export default function AdminDashboard() {
             </View>
             <View style={styles.featureList}>
               {GOOD_TO_HAVE_FEATURES.map(renderFeatureItem)}
+            </View>
+          </View>
+        )}
+
+        {activeTab === 'suggestions' && (
+          <View style={styles.section}>
+            <View style={styles.suggestionsHeader}>
+              <Lightbulb size={24} color="#f59e0b" />
+              <Text style={styles.sectionTitle}>AI-Powered Feature Suggestions</Text>
+            </View>
+            <Text style={styles.suggestionsDescription}>
+              System-generated suggestions to enhance your trucking management platform. Each suggestion includes detailed implementation prompts you can copy and use.
+            </Text>
+            <View style={styles.suggestionsList}>
+              {SYSTEM_SUGGESTIONS.map((suggestion) => {
+                const categoryColors = {
+                  feature: '#3b82f6',
+                  enhancement: '#8b5cf6',
+                  integration: '#22c55e',
+                  optimization: '#f59e0b',
+                };
+
+                const priorityColors = {
+                  low: '#64748b',
+                  medium: '#f59e0b',
+                  high: '#ef4444',
+                };
+
+                const categoryColor = categoryColors[suggestion.category];
+                const priorityColor = priorityColors[suggestion.priority];
+
+                return (
+                  <TouchableOpacity
+                    key={suggestion.id}
+                    style={styles.suggestionCard}
+                    onPress={() => router.push(`/suggestion/${suggestion.id}`)}
+                    testID={`suggestion-${suggestion.id}`}
+                  >
+                    <View style={styles.suggestionHeader}>
+                      <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
+                      <ArrowRight size={20} color="#64748b" />
+                    </View>
+                    <Text style={styles.suggestionDescription} numberOfLines={2}>
+                      {suggestion.description}
+                    </Text>
+                    <View style={styles.suggestionMeta}>
+                      <View style={[styles.suggestionBadge, { backgroundColor: categoryColor + '20' }]}>
+                        <Text style={[styles.suggestionBadgeText, { color: categoryColor }]}>
+                          {suggestion.category}
+                        </Text>
+                      </View>
+                      <View style={[styles.suggestionBadge, { backgroundColor: priorityColor + '20' }]}>
+                        <Text style={[styles.suggestionBadgeText, { color: priorityColor }]}>
+                          {suggestion.priority}
+                        </Text>
+                      </View>
+                      <Text style={styles.suggestionTime}>{suggestion.estimatedTime}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
@@ -654,5 +725,65 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#94a3b8',
     lineHeight: 18,
+  },
+  suggestionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  suggestionsDescription: {
+    fontSize: 14,
+    color: '#94a3b8',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  suggestionsList: {
+    gap: 12,
+  },
+  suggestionCard: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  suggestionTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#f1f5f9',
+  },
+  suggestionDescription: {
+    fontSize: 14,
+    color: '#cbd5e1',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  suggestionMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  suggestionBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  suggestionBadgeText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    textTransform: 'capitalize',
+  },
+  suggestionTime: {
+    fontSize: 12,
+    color: '#64748b',
   },
 });
