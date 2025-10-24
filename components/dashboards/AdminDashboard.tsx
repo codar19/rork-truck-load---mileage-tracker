@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
 import { MOCK_DISPATCHERS, MOCK_DRIVERS, ALL_USERS } from '@/mocks/users';
 import { useRouter } from 'expo-router';
-import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity } from 'lucide-react-native';
+import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import {
   StyleSheet,
@@ -80,9 +80,18 @@ export default function AdminDashboard() {
                 <Text style={styles.headerSubtitle}>{user?.name}</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-              <LogOut size={24} color="#ef4444" />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity 
+                onPress={() => router.push('/settings')} 
+                style={styles.settingsButton}
+                testID="settings-button"
+              >
+                <Settings size={24} color="#3b82f6" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                <LogOut size={24} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -234,6 +243,14 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 14,
     color: '#94a3b8',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  settingsButton: {
+    padding: 8,
   },
   logoutButton: {
     padding: 8,
