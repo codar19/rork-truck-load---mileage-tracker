@@ -111,6 +111,9 @@ export default function ExecutedPromptsScreen() {
               <View key={prompt.id} style={styles.promptCard}>
                 <View style={styles.promptHeader}>
                   <View style={styles.promptHeaderLeft}>
+                    <View style={styles.promptNumberBadge}>
+                      <Text style={styles.promptNumberText}>#{prompt.promptNumber}</Text>
+                    </View>
                     <CheckCheck size={20} color="#22c55e" />
                     <View style={styles.promptInfo}>
                       <Text style={styles.promptTitle}>{prompt.featureTitle}</Text>
@@ -275,6 +278,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     flex: 1,
+  },
+  promptNumberBadge: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 42,
+  },
+  promptNumberText: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#ffffff',
   },
   promptInfo: {
     flex: 1,

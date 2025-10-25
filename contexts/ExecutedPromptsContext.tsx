@@ -5,9 +5,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ExecutedPrompt } from '@/types/suggestion';
 
 const STORAGE_KEY = 'executed_prompts';
+const COUNTER_KEY = 'prompt_counter';
 
 export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook(() => {
   const [executedPrompts, setExecutedPrompts] = useState<ExecutedPrompt[]>([]);
+  const [promptCounter, setPromptCounter] = useState<number>(1);
 
   const promptsQuery = useQuery({
     queryKey: ['executed_prompts'],
@@ -17,6 +19,17 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
       const prompts = stored ? JSON.parse(stored) : [];
       console.log('[ExecutedPromptsContext] Loaded prompts:', prompts.length);
       return prompts;
+    }
+  });
+
+  const counterQuery = useQuery({
+    queryKey: ['prompt_counter'],
+    queryFn: async () => {
+      console.log('[ExecutedPromptsContext] Loading prompt counter from AsyncStorage');
+      const stored = await AsyncStorage.getItem(COUNTER_KEY);
+      const counter = stored ? parseInt(stored, 10) : 1;
+      console.log('[ExecutedPromptsContext] Loaded counter:', counter);
+      return counter;
     }
   });
 
@@ -36,18 +49,31 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     }
   }, [promptsQuery.data]);
 
-  const addExecutedPrompt = useCallback((prompt: Omit<ExecutedPrompt, 'id' | 'executedAt'>) => {
+  useEffect(() => {
+    if (counterQuery.data !== undefined) {
+      setPromptCounter(counterQuery.data);
+    }
+  }, [counterQuery.data]);
+
+  const addExecutedPrompt = useCallback(async (prompt: Omit<ExecutedPrompt, 'id' | 'executedAt' | 'promptNumber'>) => {
     console.log('[ExecutedPromptsContext] Adding executed prompt:', prompt.featureTitle);
     const newPrompt: ExecutedPrompt = {
       ...prompt,
       id: `${prompt.featureId}-${prompt.type}-${Date.now()}`,
+      promptNumber: promptCounter,
       executedAt: new Date().toISOString(),
     };
     const updated = [newPrompt, ...executedPrompts];
+    const newCounter = promptCounter + 1;
+    
     setExecutedPrompts(updated);
+    setPromptCounter(newCounter);
+    
     mutate(updated);
-    console.log('[ExecutedPromptsContext] Prompt added with timestamp:', newPrompt.executedAt);
-  }, [executedPrompts, mutate]);
+    await AsyncStorage.setItem(COUNTER_KEY, newCounter.toString());
+    
+    console.log('[ExecutedPromptsContext] Prompt added with number:', newPrompt.promptNumber, 'timestamp:', newPrompt.executedAt);
+  }, [executedPrompts, promptCounter, mutate]);
 
   const getExecutedPromptsByFeature = useCallback((featureId: string, type: 'done' | 'undone') => {
     return executedPrompts.filter(p => p.featureId === featureId && p.type === type);
@@ -76,7 +102,8 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     hasExecutedPrompt,
     getAllExecutedPrompts,
     clearExecutedPrompts,
-    isLoading: promptsQuery.isLoading,
+    isLoading: promptsQuery.isLoading || counterQuery.isLoading,
+    nextPromptNumber: promptCounter,
   }), [
     executedPrompts,
     addExecutedPrompt,
@@ -85,5 +112,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     getAllExecutedPrompts,
     clearExecutedPrompts,
     promptsQuery.isLoading,
+    counterQuery.isLoading,
+    promptCounter,
   ]);
 });

@@ -15,6 +15,7 @@ export type Suggestion = {
 
 export type ExecutedPrompt = {
   id: string;
+  promptNumber: number;
   featureId: string;
   featureTitle: string;
   type: 'done' | 'undone';

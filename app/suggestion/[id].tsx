@@ -343,6 +343,9 @@ export default function SuggestionDetail() {
               <Text style={styles.historyTitle}>Execution History</Text>
               {executionHistory.map((exec, index) => (
                 <View key={exec.id} style={styles.historyItem}>
+                  <View style={styles.historyNumberBadge}>
+                    <Text style={styles.historyNumberText}>#{exec.promptNumber}</Text>
+                  </View>
                   <Clock size={16} color="#64748b" />
                   <Text style={styles.historyText}>
                     {new Date(exec.executedAt).toLocaleDateString()} at {new Date(exec.executedAt).toLocaleTimeString()}
@@ -641,6 +644,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 8,
+  },
+  historyNumberBadge: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    minWidth: 36,
+    alignItems: 'center',
+  },
+  historyNumberText: {
+    fontSize: 11,
+    fontWeight: '800' as const,
+    color: '#ffffff',
   },
   historyText: {
     fontSize: 14,
