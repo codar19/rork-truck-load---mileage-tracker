@@ -137,7 +137,7 @@ export default function AdminDashboard() {
         <View style={styles.featureHeader}>
           <IconComponent size={20} color={config.color} />
           <Text style={styles.featureTitle}>{feature.title}</Text>
-          {hasSuggestions && (
+          {hasSuggestions && feature.status !== 'done' && (
             <TouchableOpacity
               onPress={() => {
                 if (suggestions.length === 1) {
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
               style={styles.suggestionIconButton}
               testID={`suggestion-${feature.id}`}
             >
-              <Lightbulb size={20} color="#f59e0b" />
+              <Lightbulb size={20} color="#f59e0b" fill="#f59e0b" />
               {suggestions.length > 1 && (
                 <View style={styles.suggestionCount}>
                   <Text style={styles.suggestionCountText}>{suggestions.length}</Text>
@@ -163,6 +163,21 @@ export default function AdminDashboard() {
           <View style={[styles.statusBadge, { backgroundColor: config.color + '20' }]}>
             <Text style={[styles.statusText, { color: config.color }]}>{config.text}</Text>
           </View>
+          {hasSuggestions && feature.status !== 'done' && (
+            <TouchableOpacity
+              onPress={() => {
+                if (suggestions.length === 1) {
+                  router.push(`/suggestion/${suggestions[0].id}`);
+                } else {
+                  router.push(`/suggestion/${suggestions[0].id}`);
+                }
+              }}
+              style={styles.viewPromptButton}
+              testID={`view-prompt-${feature.id}`}
+            >
+              <Text style={styles.viewPromptText}>View AI Prompt</Text>
+            </TouchableOpacity>
+          )}
         </View>
         {feature.note && (
           <View style={styles.featureNote}>
@@ -668,6 +683,8 @@ const styles = StyleSheet.create({
   featureFooter: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -752,8 +769,10 @@ const styles = StyleSheet.create({
   suggestionIconButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
     position: 'relative',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
   },
   suggestionCount: {
     position: 'absolute',
@@ -768,6 +787,20 @@ const styles = StyleSheet.create({
   },
   suggestionCountText: {
     fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#ffffff',
+  },
+  viewPromptButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#f59e0b',
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  viewPromptText: {
+    fontSize: 12,
     fontWeight: '700' as const,
     color: '#ffffff',
   },
