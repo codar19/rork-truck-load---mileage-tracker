@@ -8,6 +8,7 @@ import { LoadProvider } from "@/contexts/LoadContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { OfferProvider } from "@/contexts/OfferContext";
+import { LoadTemplateProvider } from "@/contexts/LoadTemplateContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -30,6 +31,8 @@ function RootLayoutNav() {
       <Stack.Screen name="load-board" options={{ headerShown: false }} />
       <Stack.Screen name="my-offers" options={{ headerShown: false }} />
       <Stack.Screen name="available-load/[id]" options={{ title: "Load Details" }} />
+      <Stack.Screen name="templates" options={{ headerShown: false }} />
+      <Stack.Screen name="bulk-operations" options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -45,11 +48,13 @@ export default function RootLayout() {
         <SettingsProvider>
           <AuthProvider>
             <LoadProvider>
-              <OfferProvider>
-                <GestureHandlerRootView>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
-              </OfferProvider>
+              <LoadTemplateProvider>
+                <OfferProvider>
+                  <GestureHandlerRootView>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </OfferProvider>
+              </LoadTemplateProvider>
             </LoadProvider>
           </AuthProvider>
         </SettingsProvider>
