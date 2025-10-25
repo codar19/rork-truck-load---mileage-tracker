@@ -8,6 +8,7 @@ import { LoadProvider } from "@/contexts/LoadContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { OfferProvider } from "@/contexts/OfferContext";
+import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,18 +40,20 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SettingsProvider>
-        <AuthProvider>
-          <LoadProvider>
-            <OfferProvider>
-              <GestureHandlerRootView>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
-            </OfferProvider>
-          </LoadProvider>
-        </AuthProvider>
-      </SettingsProvider>
-    </QueryClientProvider>
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <SettingsProvider>
+          <AuthProvider>
+            <LoadProvider>
+              <OfferProvider>
+                <GestureHandlerRootView>
+                  <RootLayoutNav />
+                </GestureHandlerRootView>
+              </OfferProvider>
+            </LoadProvider>
+          </AuthProvider>
+        </SettingsProvider>
+      </QueryClientProvider>
+    </trpc.Provider>
   );
 }
