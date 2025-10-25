@@ -1,6 +1,41 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, Redirect } from 'expo-router';
-import { Briefcase, ChevronLeft, CheckCircle, Circle, XCircle } from 'lucide-react-native';
+import { 
+  Briefcase, 
+  ChevronLeft, 
+  CheckCircle, 
+  Circle, 
+  XCircle,
+  CreditCard,
+  Users,
+  Database,
+  FileDown,
+  Search,
+  Lock,
+  Smartphone,
+  AlertTriangle,
+  Bell,
+  MapPin,
+  FileText,
+  FileCheck,
+  MessageSquare,
+  Route,
+  Cloud,
+  Wrench,
+  Truck,
+  ShoppingCart,
+  Camera,
+  WifiOff,
+  BarChart3,
+  Trophy,
+  Activity,
+  Bookmark,
+  Globe,
+  Mic,
+  Bot,
+  Calculator,
+  FileSpreadsheet
+} from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -23,6 +58,7 @@ interface Feature {
   category: FeatureCategory;
   status: FeatureStatus;
   systemDetermined: boolean;
+  iconName?: string;
 }
 
 type TabType = 'description' | 'must-have' | 'good-to-have';
@@ -187,6 +223,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'CreditCard',
     },
     {
       id: 20,
@@ -195,6 +232,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Users',
     },
     {
       id: 21,
@@ -203,6 +241,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Database',
     },
     {
       id: 22,
@@ -211,6 +250,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'FileDown',
     },
     {
       id: 23,
@@ -219,6 +259,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Search',
     },
     {
       id: 24,
@@ -227,6 +268,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Lock',
     },
     {
       id: 25,
@@ -235,6 +277,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Smartphone',
     },
     {
       id: 26,
@@ -243,6 +286,7 @@ export default function BusinessModelScreen() {
       category: 'must-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'AlertTriangle',
     },
     {
       id: 27,
@@ -251,6 +295,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Bell',
     },
     {
       id: 28,
@@ -259,6 +304,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'MapPin',
     },
     {
       id: 29,
@@ -267,6 +313,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'FileText',
     },
     {
       id: 30,
@@ -275,6 +322,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'FileCheck',
     },
     {
       id: 31,
@@ -283,6 +331,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'MessageSquare',
     },
     {
       id: 32,
@@ -291,6 +340,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Route',
     },
     {
       id: 33,
@@ -299,6 +349,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Cloud',
     },
     {
       id: 34,
@@ -307,6 +358,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Wrench',
     },
     {
       id: 35,
@@ -315,6 +367,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Truck',
     },
     {
       id: 36,
@@ -323,6 +376,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'ShoppingCart',
     },
     {
       id: 37,
@@ -331,6 +385,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Camera',
     },
     {
       id: 38,
@@ -339,6 +394,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'WifiOff',
     },
     {
       id: 39,
@@ -347,6 +403,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'BarChart3',
     },
     {
       id: 40,
@@ -355,6 +412,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Trophy',
     },
     {
       id: 41,
@@ -363,6 +421,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'CreditCard',
     },
     {
       id: 42,
@@ -371,6 +430,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Activity',
     },
     {
       id: 43,
@@ -379,6 +439,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Bookmark',
     },
     {
       id: 44,
@@ -387,6 +448,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Globe',
     },
     {
       id: 45,
@@ -395,6 +457,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Mic',
     },
     {
       id: 46,
@@ -403,6 +466,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Bot',
     },
     {
       id: 47,
@@ -411,6 +475,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Calculator',
     },
     {
       id: 48,
@@ -419,6 +484,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Globe',
     },
     {
       id: 49,
@@ -427,6 +493,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'Activity',
     },
     {
       id: 50,
@@ -435,6 +502,7 @@ export default function BusinessModelScreen() {
       category: 'good-to-have',
       status: 'undone',
       systemDetermined: true,
+      iconName: 'FileSpreadsheet',
     },
   ]);
 
@@ -626,41 +694,84 @@ export default function BusinessModelScreen() {
                 </Text>
               </View>
             ) : (
-              getFilteredFeatures().map((feature) => (
-                <View key={feature.id} style={styles.featureCard}>
-                  <View style={styles.featureCardHeader}>
-                    <View style={styles.featureCardLeft}>
-                      {feature.status === 'done' ? (
-                        <CheckCircle size={24} color="#22c55e" />
-                      ) : (
-                        <Circle size={24} color="#64748b" />
-                      )}
-                      <View style={styles.featureCardText}>
-                        <Text style={styles.featureCardTitle}>{feature.title}</Text>
-                        <Text style={styles.featureCardDescription}>{feature.description}</Text>
+              getFilteredFeatures().map((feature) => {
+                const IconComponent = getIconComponent(feature.iconName);
+                return (
+                  <View key={feature.id} style={styles.featureCard}>
+                    <View style={styles.featureCardHeader}>
+                      <View style={styles.featureCardLeft}>
+                        {feature.iconName && feature.status === 'undone' ? (
+                          <View style={styles.iconContainer}>
+                            <IconComponent size={24} color="#f59e0b" />
+                          </View>
+                        ) : feature.status === 'done' ? (
+                          <CheckCircle size={24} color="#22c55e" />
+                        ) : (
+                          <Circle size={24} color="#64748b" />
+                        )}
+                        <View style={styles.featureCardText}>
+                          <Text style={styles.featureCardTitle}>{feature.title}</Text>
+                          <Text style={styles.featureCardDescription}>{feature.description}</Text>
+                        </View>
                       </View>
+                      <Switch
+                        value={feature.status === 'done'}
+                        onValueChange={() => handleToggleFeature(feature.id)}
+                        trackColor={{ false: '#334155', true: '#22c55e' }}
+                        thumbColor={feature.status === 'done' ? '#ffffff' : '#94a3b8'}
+                        testID={`feature-toggle-${feature.id}`}
+                      />
                     </View>
-                    <Switch
-                      value={feature.status === 'done'}
-                      onValueChange={() => handleToggleFeature(feature.id)}
-                      trackColor={{ false: '#334155', true: '#22c55e' }}
-                      thumbColor={feature.status === 'done' ? '#ffffff' : '#94a3b8'}
-                      testID={`feature-toggle-${feature.id}`}
-                    />
+                    {feature.systemDetermined && (
+                      <View style={styles.systemBadge}>
+                        <Text style={styles.systemBadgeText}>System Determined</Text>
+                      </View>
+                    )}
                   </View>
-                  {feature.systemDetermined && (
-                    <View style={styles.systemBadge}>
-                      <Text style={styles.systemBadgeText}>System Determined</Text>
-                    </View>
-                  )}
-                </View>
-              ))
+                );
+              })
             )}
           </View>
         )}
       </ScrollView>
     </View>
   );
+}
+
+function getIconComponent(iconName?: string) {
+  const iconMap: Record<string, any> = {
+    CreditCard,
+    Users,
+    Database,
+    FileDown,
+    Search,
+    Lock,
+    Smartphone,
+    AlertTriangle,
+    Bell,
+    MapPin,
+    FileText,
+    FileCheck,
+    MessageSquare,
+    Route,
+    Cloud,
+    Wrench,
+    Truck,
+    ShoppingCart,
+    Camera,
+    WifiOff,
+    BarChart3,
+    Trophy,
+    Activity,
+    Bookmark,
+    Globe,
+    Mic,
+    Bot,
+    Calculator,
+    FileSpreadsheet,
+  };
+  
+  return iconMap[iconName || ''] || Circle;
 }
 
 const styles = StyleSheet.create({
@@ -914,5 +1025,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600' as const,
     color: '#3b82f6',
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f59e0b20',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
