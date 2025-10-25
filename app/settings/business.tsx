@@ -35,8 +35,7 @@ import {
   Bot,
   Calculator,
   FileSpreadsheet,
-  Lightbulb,
-  FileCode
+  Lightbulb
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -729,16 +728,10 @@ export default function BusinessModelScreen() {
                         <View style={styles.systemBadge}>
                           <Text style={styles.systemBadgeText}>System Determined</Text>
                         </View>
-                        <Link href={`/suggestion/${feature.id}?type=${feature.status}`} asChild>
+                        <Link href={`/feature-suggestions/${feature.id}`} asChild>
                           <TouchableOpacity style={styles.actionButton}>
                             <Lightbulb size={14} color="#f59e0b" />
-                            <Text style={styles.actionButtonText}>Suggestions</Text>
-                          </TouchableOpacity>
-                        </Link>
-                        <Link href={`/suggestion/${feature.id}?type=${feature.status}&view=prompt`} asChild>
-                          <TouchableOpacity style={styles.actionButton}>
-                            <FileCode size={14} color="#3b82f6" />
-                            <Text style={styles.actionButtonText}>Prompt</Text>
+                            <Text style={styles.actionButtonText}>View All</Text>
                           </TouchableOpacity>
                         </Link>
                       </View>

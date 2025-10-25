@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Clock,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -19,6 +20,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import { SYSTEM_SUGGESTIONS } from '@/mocks/suggestions';
+import { usePromptExecution } from '@/contexts/PromptExecutionContext';
 
 const FEATURE_SUGGESTIONS_MAP: Record<string, { done: string[]; undone: string[] }> = {
   '1': { 
@@ -146,6 +148,7 @@ export default function SuggestionDetail() {
   const { id, type, view } = useLocalSearchParams();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const { markPromptAsExecuted, isPromptExecuted, getLastExecution } = usePromptExecution();
 
   const featureId = Array.isArray(id) ? id[0] : id;
   const featureType = (Array.isArray(type) ? type[0] : type) as 'done' | 'undone';
@@ -215,10 +218,35 @@ export default function SuggestionDetail() {
   const suggestions = featureType === 'done' ? suggestionData.done : suggestionData.undone;
   const prompt = generatePrompt(feature.title, feature.description, suggestions, featureType);
 
+  const isExecuted = isPromptExecuted(featureId, featureType);
+  const lastExecution = getLastExecution(featureId, featureType);
+
   const handleCopyPrompt = async () => {
+    console.log('[SuggestionDetail] Copying prompt for feature:', featureId);
     await Clipboard.setStringAsync(prompt);
     setCopied(true);
+    
+    console.log('[SuggestionDetail] Marking prompt as executed');
+    markPromptAsExecuted(featureId, feature.title, featureType);
+    
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatExecutionDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const statusColor = featureType === 'done' ? '#22c55e' : '#f59e0b';
@@ -257,8 +285,23 @@ export default function SuggestionDetail() {
                   {featureType === 'done' ? 'Improvement' : 'Implementation'}
                 </Text>
               </View>
+              {isExecuted && (
+                <View style={[styles.badge, { backgroundColor: '#22c55e20' }]}>
+                  <Check size={12} color="#22c55e" />
+                  <Text style={[styles.badgeText, { color: '#22c55e' }]}>Executed</Text>
+                </View>
+              )}
             </View>
           </View>
+
+          {isExecuted && lastExecution && (
+            <View style={styles.executionInfo}>
+              <Clock size={16} color="#64748b" />
+              <Text style={styles.executionText}>
+                Prompt executed {formatExecutionDate(lastExecution.executedAt)}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Description</Text>
@@ -312,8 +355,23 @@ export default function SuggestionDetail() {
                   {statusText}
                 </Text>
               </View>
+              {isExecuted && (
+                <View style={[styles.badge, { backgroundColor: '#22c55e20' }]}>
+                  <Check size={12} color="#22c55e" />
+                  <Text style={[styles.badgeText, { color: '#22c55e' }]}>Executed</Text>
+                </View>
+              )}
             </View>
           </View>
+
+          {isExecuted && lastExecution && (
+            <View style={styles.executionInfo}>
+              <Clock size={16} color="#64748b" />
+              <Text style={styles.executionText}>
+                Prompt executed {formatExecutionDate(lastExecution.executedAt)}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Description</Text>
@@ -397,6 +455,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -558,5 +619,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94a3b8',
     lineHeight: 20,
+  },
+  executionInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#1e293b',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+    marginBottom: 16,
+  },
+  executionText: {
+    fontSize: 13,
+    color: '#94a3b8',
   },
 });
