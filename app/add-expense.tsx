@@ -44,7 +44,7 @@ export default function AddExpenseScreen() {
   const { addExpense } = useExpenses();
   const { loads } = useLoads();
   
-  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory>('fuel');
+  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [location, setLocation] = useState('');
@@ -108,6 +108,12 @@ export default function AddExpenseScreen() {
     if (!user) {
       console.log('[AddExpense] Error: User not authenticated');
       Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
+    if (!selectedCategory) {
+      console.log('[AddExpense] Error: No category selected');
+      Alert.alert('Error', 'Please select a category');
       return;
     }
 
@@ -209,36 +215,27 @@ export default function AddExpenseScreen() {
               {EXPENSE_CATEGORIES.map(category => (
                 <TouchableOpacity
                   key={category.value}
-                  style={[
-                    styles.categoryCard,
-                    selectedCategory === category.value && styles.categoryCardActive,
-                  ]}
-                  onPress={() => setSelectedCategory(category.value)}
+                  style={styles.categoryCard}
+                  onPress={() => {
+                    console.log('[AddExpense] Category selected:', category.value);
+                    setSelectedCategory(category.value);
+                  }}
                 >
-                  <View style={[
-                    styles.categoryIconWrapper,
-                    selectedCategory === category.value && styles.categoryIconWrapperActive,
-                  ]}>
-                    {getCategoryIcon(category.value, 24, selectedCategory === category.value ? '#ffffff' : '#f59e0b')}
+                  <View style={styles.categoryIconWrapper}>
+                    {getCategoryIcon(category.value, 24, '#f59e0b')}
                   </View>
-                  <Text style={[
-                    styles.categoryLabel,
-                    selectedCategory === category.value && styles.categoryLabelActive,
-                  ]}>
+                  <Text style={styles.categoryLabel}>
                     {category.label}
                   </Text>
-                  {selectedCategory === category.value && (
-                    <View style={styles.categoryCheck}>
-                      <Check size={12} color="#ffffff" />
-                    </View>
-                  )}
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Details</Text>
+          {selectedCategory && (
+            <>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Details</Text>
             
             <View style={styles.inputGroup}>
               <View style={styles.inputLabel}>
@@ -299,9 +296,9 @@ export default function AddExpenseScreen() {
                 textAlignVertical="top"
               />
             </View>
-          </View>
+              </View>
 
-          {activeLoads.length > 0 && (
+              {activeLoads.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Associate with Load (Optional)</Text>
               <ScrollView
@@ -343,10 +340,10 @@ export default function AddExpenseScreen() {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </View>
-          )}
+              </View>
+              )}
 
-          <View style={styles.section}>
+              <View style={styles.section}>
             <Text style={styles.sectionTitle}>Receipt</Text>
             
             {receiptPhoto ? (
@@ -371,20 +368,24 @@ export default function AddExpenseScreen() {
                 <Camera size={24} color="#f59e0b" />
                 <Text style={styles.scanButtonText}>Scan Receipt</Text>
               </TouchableOpacity>
-            )}
-          </View>
+              )}
+              </View>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSubmit}
-        >
-          <Check size={20} color="#ffffff" />
-          <Text style={styles.submitButtonText}>Add Expense</Text>
-        </TouchableOpacity>
-      </View>
+      {selectedCategory && (
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+          >
+            <Check size={20} color="#ffffff" />
+            <Text style={styles.submitButtonText}>Add Expense</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -447,10 +448,7 @@ const styles = StyleSheet.create({
     borderColor: '#334155',
     position: 'relative' as const,
   },
-  categoryCardActive: {
-    borderColor: '#f59e0b',
-    backgroundColor: '#1e293b',
-  },
+
   categoryIconWrapper: {
     width: 48,
     height: 48,
@@ -460,29 +458,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  categoryIconWrapperActive: {
-    backgroundColor: '#f59e0b',
-  },
+
   categoryLabel: {
     fontSize: 12,
     fontWeight: '600' as const,
     color: '#94a3b8',
     textAlign: 'center',
   },
-  categoryLabelActive: {
-    color: '#f59e0b',
-  },
-  categoryCheck: {
-    position: 'absolute' as const,
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#f59e0b',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
+
   inputGroup: {
     marginBottom: 16,
   },
