@@ -125,22 +125,21 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     return prompt?.promptNumber;
   }, [executedPrompts]);
 
-  const getUniquePromptId = useCallback((featureId: string, type: 'done' | 'undone') => {
-    // Generate a deterministic unique ID for each feature+type combination
-    // This ensures each prompt has a unique ID even before execution
-    const hashCode = (str: string): number => {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-      }
-      return Math.abs(hash);
-    };
+  const getOrAssignPromptNumber = useCallback((featureId: string, type: 'done' | 'undone') => {
+    // Check if this prompt already exists (either executed or not)
+    const existing = executedPrompts.find(p => p.featureId === featureId && p.type === type);
     
-    const combinedKey = `${featureId}-${type}`;
-    return hashCode(combinedKey) % 10000;
-  }, []);
+    if (existing) {
+      // Return existing prompt number - ID never changes!
+      console.log('[ExecutedPromptsContext] Found existing prompt number:', existing.promptNumber);
+      return existing.promptNumber;
+    }
+    
+    // Assign the next available prompt number
+    // This number is permanent for this prompt's lifetime
+    console.log('[ExecutedPromptsContext] Assigning new prompt number:', promptCounter);
+    return promptCounter;
+  }, [executedPrompts, promptCounter]);
 
   return useMemo(() => ({
     executedPrompts,
@@ -150,7 +149,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     getAllExecutedPrompts,
     clearExecutedPrompts,
     getPromptNumberForFeature,
-    getUniquePromptId,
+    getOrAssignPromptNumber,
     isLoading: promptsQuery.isLoading || counterQuery.isLoading,
     nextPromptNumber: promptCounter,
   }), [
@@ -161,7 +160,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     getAllExecutedPrompts,
     clearExecutedPrompts,
     getPromptNumberForFeature,
-    getUniquePromptId,
+    getOrAssignPromptNumber,
     promptsQuery.isLoading,
     counterQuery.isLoading,
     promptCounter,
