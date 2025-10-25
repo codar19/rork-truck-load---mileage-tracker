@@ -127,7 +127,6 @@ export default function AdminDashboard() {
 
     const config = statusConfig[feature.status];
     const IconComponent = config.icon;
-    const bgColor = config.color + '20';
     const hasSuggestions = feature.suggestionIds && feature.suggestionIds.length > 0;
     const suggestions = hasSuggestions 
       ? SYSTEM_SUGGESTIONS.filter(s => feature.suggestionIds?.includes(s.id))
@@ -161,7 +160,7 @@ export default function AdminDashboard() {
           )}
         </View>
         <View style={styles.featureFooter}>
-          <View style={[styles.statusBadge, { backgroundColor: bgColor }]}>
+          <View style={[styles.statusBadge, { backgroundColor: config.color + '20' }]}>
             <Text style={[styles.statusText, { color: config.color }]}>{config.text}</Text>
           </View>
           {hasSuggestions && feature.status !== 'done' && (
