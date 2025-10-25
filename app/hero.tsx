@@ -228,9 +228,10 @@ export default function HeroScreen() {
           <View style={styles.featuresGrid}>
             {FEATURES.map((feature, index) => {
               const Icon = feature.icon;
+              const bgColor = feature.color + '20';
               return (
                 <View key={index} style={styles.featureCard}>
-                  <View style={[styles.featureIcon, { backgroundColor: feature.color + '20' }]}>
+                  <View style={[styles.featureIcon, { backgroundColor: bgColor }]}>
                     <Icon size={24} color={feature.color} />
                   </View>
                   <Text style={styles.featureTitle}>{feature.title}</Text>

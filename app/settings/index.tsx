@@ -125,28 +125,31 @@ export default function SettingsScreen() {
         </Text>
 
         <View style={styles.menuList}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.menuItem,
-                index === menuItems.length - 1 && styles.menuItemLast,
-              ]}
-              onPress={() => router.push(item.route as any)}
-              testID={`settings-menu-${item.id}`}
-            >
-              <View style={styles.menuItemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
-                  {item.icon}
+          {menuItems.map((item, index) => {
+            const bgColor = item.color + '20';
+            return (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.menuItem,
+                  index === menuItems.length - 1 && styles.menuItemLast,
+                ]}
+                onPress={() => router.push(item.route as any)}
+                testID={`settings-menu-${item.id}`}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={[styles.iconContainer, { backgroundColor: bgColor }]}>
+                    {item.icon}
+                  </View>
+                  <View style={styles.menuItemText}>
+                    <Text style={styles.menuItemTitle}>{item.title}</Text>
+                    <Text style={styles.menuItemDescription}>{item.description}</Text>
+                  </View>
                 </View>
-                <View style={styles.menuItemText}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemDescription}>{item.description}</Text>
-                </View>
-              </View>
-              <ChevronRight size={20} color="#64748b" />
-            </TouchableOpacity>
-          ))}
+                <ChevronRight size={20} color="#64748b" />
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.infoCard}>
