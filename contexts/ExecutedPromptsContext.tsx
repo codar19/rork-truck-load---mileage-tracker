@@ -87,6 +87,25 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
         autoPrompts.push(prompt2);
         maxPromptNumber = Math.max(maxPromptNumber, 2);
       }
+
+      // Auto-mark prompt #3 (Expense Management) as executed if not already
+      const hasPrompt3 = prompts.some((p: ExecutedPrompt) => p.featureId === '4' && p.type === 'done');
+      
+      if (!hasPrompt3) {
+        console.log('[ExecutedPromptsContext] Auto-marking prompt #3 (Expense Management) as executed');
+        const prompt3: ExecutedPrompt = {
+          id: '4-done-auto',
+          promptNumber: 3,
+          featureId: '4',
+          featureTitle: 'Expense Management',
+          type: 'done',
+          prompt: `I need to improve the "Expense Management" feature in my trucking management app.\n\nCurrent feature: Track fuel costs, tolls, daily truck expenses, and per-mile surcharges\n\nPlease implement these improvements:\n1. Add expense categories\n2. Implement receipt scanning\n\nRequirements:\n- Maintain compatibility with existing functionality\n- Follow the current code structure and patterns\n- Use TypeScript with proper typing\n- Add console logs for debugging\n- Test on both mobile and web\n- Use React Native components and StyleSheet\n\nPlease implement these improvements step by step.`,
+          executedAt: new Date().toISOString(),
+          source: 'business-model',
+        };
+        autoPrompts.push(prompt3);
+        maxPromptNumber = Math.max(maxPromptNumber, 3);
+      }
       
       if (autoPrompts.length > 0) {
         const updatedPrompts = [...autoPrompts, ...prompts];

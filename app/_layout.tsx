@@ -10,6 +10,7 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 import { OfferProvider } from "@/contexts/OfferContext";
 import { LoadTemplateProvider } from "@/contexts/LoadTemplateContext";
 import { ExecutedPromptsProvider } from "@/contexts/ExecutedPromptsContext";
+import { ExpenseProvider } from "@/contexts/ExpenseContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -35,6 +36,8 @@ function RootLayoutNav() {
       <Stack.Screen name="templates" options={{ headerShown: false }} />
       <Stack.Screen name="bulk-operations" options={{ headerShown: false }} />
       <Stack.Screen name="executed-prompts" options={{ headerShown: false }} />
+      <Stack.Screen name="expenses" options={{ headerShown: false }} />
+      <Stack.Screen name="add-expense" options={{ title: "Add Expense", presentation: "modal" }} />
     </Stack>
   );
 }
@@ -53,9 +56,11 @@ export default function RootLayout() {
               <LoadProvider>
                 <LoadTemplateProvider>
                   <OfferProvider>
+                    <ExpenseProvider>
                     <GestureHandlerRootView>
                       <RootLayoutNav />
                     </GestureHandlerRootView>
+                    </ExpenseProvider>
                   </OfferProvider>
                 </LoadTemplateProvider>
               </LoadProvider>

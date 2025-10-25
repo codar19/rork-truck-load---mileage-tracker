@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
 import { useOffers } from '@/contexts/OfferContext';
 import { useRouter } from 'expo-router';
-import { Truck, Plus, Package, MapPin, LogOut, DollarSign, TrendingUp, Search, ArrowRight } from 'lucide-react-native';
+import { Truck, Plus, Package, MapPin, LogOut, DollarSign, TrendingUp, Search, ArrowRight, Receipt } from 'lucide-react-native';
 import FooterNav from '@/components/FooterNav';
 import React, { useMemo } from 'react';
 import {
@@ -41,10 +41,7 @@ export default function DriverDashboard() {
     [user?.id, getOffersByDriver]
   );
 
-  const pendingOffers = useMemo(
-    () => myOffers.filter(o => o.status === 'pending'),
-    [myOffers]
-  );
+
 
   const stats = useMemo(() => {
     const totalEarnings = completedLoads.reduce((sum, load) => sum + load.payAmount, 0);
@@ -166,25 +163,45 @@ export default function DriverDashboard() {
       </SafeAreaView>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <TouchableOpacity
-          style={styles.loadBoardCard}
-          onPress={() => router.push('/load-board')}
-          testID="load-board-quick-access"
-        >
-          <View style={styles.loadBoardCardContent}>
-            <View style={styles.loadBoardIconContainer}>
-              <Search size={28} color="#f59e0b" />
+        <View style={styles.quickActionsContainer}>
+          <TouchableOpacity
+            style={styles.quickActionCard}
+            onPress={() => router.push('/load-board')}
+            testID="load-board-quick-access"
+          >
+            <View style={styles.quickActionContent}>
+              <View style={styles.quickActionIconContainer}>
+                <Search size={24} color="#f59e0b" />
+              </View>
+              <View style={styles.quickActionTextContainer}>
+                <Text style={styles.quickActionTitle}>Find Loads</Text>
+                <Text style={styles.quickActionSubtitle}>
+                  {availableLoads.length} available
+                </Text>
+              </View>
+              <ArrowRight size={20} color="#f59e0b" />
             </View>
-            <View style={styles.loadBoardTextContainer}>
-              <Text style={styles.loadBoardTitle}>Find New Loads</Text>
-              <Text style={styles.loadBoardSubtitle}>
-                {availableLoads.length} loads available
-                {pendingOffers.length > 0 && ` · ${pendingOffers.length} pending offer${pendingOffers.length !== 1 ? 's' : ''}`}
-              </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickActionCard}
+            onPress={() => router.push('/expenses')}
+            testID="expenses-quick-access"
+          >
+            <View style={styles.quickActionContent}>
+              <View style={styles.quickActionIconContainer}>
+                <Receipt size={24} color="#f59e0b" />
+              </View>
+              <View style={styles.quickActionTextContainer}>
+                <Text style={styles.quickActionTitle}>Expenses</Text>
+                <Text style={styles.quickActionSubtitle}>
+                  Track & manage
+                </Text>
+              </View>
+              <ArrowRight size={20} color="#f59e0b" />
             </View>
-            <ArrowRight size={24} color="#f59e0b" />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
 
         {driverLoads.length === 0 ? (
           <View style={styles.emptyState}>
@@ -474,6 +491,43 @@ const styles = StyleSheet.create({
   },
   loadBoardSubtitle: {
     fontSize: 14,
+    color: '#94a3b8',
+  },
+  quickActionsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickActionCard: {
+    flex: 1,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+  },
+  quickActionContent: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  quickActionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#0f172a',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionTextContainer: {
+    gap: 2,
+  },
+  quickActionTitle: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#f1f5f9',
+  },
+  quickActionSubtitle: {
+    fontSize: 13,
     color: '#94a3b8',
   },
 });
