@@ -150,7 +150,7 @@ export default function SuggestionDetail() {
   const { id, type, view } = useLocalSearchParams();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature } = useExecutedPrompts();
+  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature, nextPromptNumber } = useExecutedPrompts();
 
   const featureId = Array.isArray(id) ? id[0] : id;
   const featureType = (Array.isArray(type) ? type[0] : type) as 'done' | 'undone';
@@ -274,6 +274,12 @@ export default function SuggestionDetail() {
       {viewMode === 'prompt' ? (
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
           <View style={styles.titleSection}>
+            <View style={styles.promptIdSection}>
+              <View style={styles.promptIdBadge}>
+                <Text style={styles.promptIdLabel}>Prompt ID</Text>
+                <Text style={styles.promptIdNumber}>#{nextPromptNumber}</Text>
+              </View>
+            </View>
             <Text style={styles.title}>{feature.title}</Text>
             <View style={styles.badges}>
               <View style={[styles.badge, { backgroundColor: statusColor + '20' }]}>
@@ -334,7 +340,7 @@ export default function SuggestionDetail() {
             ) : (
               <TouchableOpacity onPress={handleExecutePrompt} style={styles.executeButton}>
                 <Clock size={20} color="#ffffff" />
-                <Text style={styles.executeButtonText}>Mark as Executed</Text>
+                <Text style={styles.executeButtonText}>Mark as Executed (#{nextPromptNumber})</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -683,5 +689,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94a3b8',
     lineHeight: 20,
+  },
+  promptIdSection: {
+    marginBottom: 12,
+    alignItems: 'flex-start',
+  },
+  promptIdBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 8,
+  },
+  promptIdLabel: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#e9d5ff',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  promptIdNumber: {
+    fontSize: 20,
+    fontWeight: '800' as const,
+    color: '#ffffff',
   },
 });
