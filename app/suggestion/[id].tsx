@@ -6,6 +6,8 @@ import {
   AlertCircle,
   Copy,
   Check,
+  Clock,
+  CheckCheck,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -15,10 +17,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import { SYSTEM_SUGGESTIONS } from '@/mocks/suggestions';
+import { useExecutedPrompts } from '@/contexts/ExecutedPromptsContext';
 
 const FEATURE_SUGGESTIONS_MAP: Record<string, { done: string[]; undone: string[] }> = {
   '1': { 
@@ -146,6 +150,7 @@ export default function SuggestionDetail() {
   const { id, type, view } = useLocalSearchParams();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature } = useExecutedPrompts();
 
   const featureId = Array.isArray(id) ? id[0] : id;
   const featureType = (Array.isArray(type) ? type[0] : type) as 'done' | 'undone';
@@ -220,6 +225,25 @@ export default function SuggestionDetail() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleExecutePrompt = () => {
+    console.log('[SuggestionDetail] Marking prompt as executed:', featureId, featureType);
+    addExecutedPrompt({
+      featureId,
+      featureTitle: feature.title,
+      type: featureType,
+      prompt,
+      source: 'business-model',
+    });
+    Alert.alert(
+      'Prompt Executed',
+      'This prompt has been marked as executed with a timestamp. You can view all executed prompts in the business model screen.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const isExecuted = hasExecutedPrompt(featureId, featureType);
+  const executionHistory = getExecutedPromptsByFeature(featureId, featureType);
 
   const statusColor = featureType === 'done' ? '#22c55e' : '#f59e0b';
   const statusText = featureType === 'done' ? 'Improvement Suggestions' : 'Implementation Suggestions';
@@ -297,10 +321,36 @@ export default function SuggestionDetail() {
             </Text>
           </View>
 
-          <TouchableOpacity onPress={handleCopyPrompt} style={styles.actionButton}>
-            <Copy size={20} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Copy Prompt & Get Started</Text>
-          </TouchableOpacity>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity onPress={handleCopyPrompt} style={styles.actionButton}>
+              <Copy size={20} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Copy Prompt</Text>
+            </TouchableOpacity>
+            {isExecuted ? (
+              <View style={styles.executedIndicator}>
+                <CheckCheck size={20} color="#22c55e" />
+                <Text style={styles.executedText}>Executed</Text>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={handleExecutePrompt} style={styles.executeButton}>
+                <Clock size={20} color="#ffffff" />
+                <Text style={styles.executeButtonText}>Mark as Executed</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {executionHistory.length > 0 && (
+            <View style={styles.historySection}>
+              <Text style={styles.historyTitle}>Execution History</Text>
+              {executionHistory.map((exec, index) => (
+                <View key={exec.id} style={styles.historyItem}>
+                  <Clock size={16} color="#64748b" />
+                  <Text style={styles.historyText}>
+                    {new Date(exec.executedAt).toLocaleDateString()} at {new Date(exec.executedAt).toLocaleTimeString()}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </ScrollView>
       ) : (
         <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -521,6 +571,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontStyle: 'italic',
   },
+  actionButtons: {
+    gap: 12,
+    marginTop: 8,
+  },
   actionButton: {
     backgroundColor: '#8b5cf6',
     borderRadius: 12,
@@ -530,12 +584,67 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    marginTop: 8,
   },
   actionButtonText: {
     fontSize: 16,
     fontWeight: '700' as const,
     color: '#ffffff',
+  },
+  executeButton: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  executeButtonText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#ffffff',
+  },
+  executedIndicator: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 2,
+    borderColor: '#22c55e',
+  },
+  executedText: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#22c55e',
+  },
+  historySection: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#f1f5f9',
+    marginBottom: 12,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  historyText: {
+    fontSize: 14,
+    color: '#94a3b8',
   },
   errorText: {
     fontSize: 16,

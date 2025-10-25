@@ -10,7 +10,8 @@ import {
   User,
   Bell,
   Shield,
-  Database
+  Database,
+  CheckCheck
 } from 'lucide-react-native';
 import React from 'react';
 import {
@@ -64,6 +65,14 @@ export default function SettingsScreen() {
       icon: <Briefcase size={24} color="#f59e0b" />,
       route: '/settings/business',
       color: '#f59e0b',
+    },
+    {
+      id: 'executed-prompts',
+      title: 'Executed Prompts',
+      description: 'View prompts executed with timestamps',
+      icon: <CheckCheck size={24} color="#22c55e" />,
+      route: '/executed-prompts',
+      color: '#22c55e',
     },
     {
       id: 'users',
