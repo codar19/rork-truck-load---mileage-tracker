@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Load, LoadCalculations } from '@/types/load';
+import { Load, LoadCalculations, MileageAlert } from '@/types/load';
 import { MOCK_LOADS } from '@/mocks/loads';
 
 const STORAGE_KEY = 'loads';
@@ -46,6 +46,98 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     mutate(updatedLoads);
   }, [mutate]);
 
+  const calculateMileageAlerts = useCallback((load: Load): MileageAlert[] => {
+    console.log('[LoadContext] Calculating mileage alerts for load:', load.id);
+    const alerts: MileageAlert[] = [];
+
+    const receivedReading = load.odometerReadings.find(r => r.stage === 'received');
+    const pickupReading = load.odometerReadings.find(r => r.stage === 'pickup');
+    const deliveryReading = load.odometerReadings.find(r => r.stage === 'delivery');
+
+    if (!receivedReading) {
+      return alerts;
+    }
+
+    let emptyMiles = 0;
+    let loadedMiles = 0;
+    let actualMiles = 0;
+
+    if (receivedReading && pickupReading) {
+      emptyMiles = pickupReading.reading - receivedReading.reading;
+    }
+
+    if (pickupReading && deliveryReading) {
+      loadedMiles = deliveryReading.reading - pickupReading.reading;
+    }
+
+    actualMiles = emptyMiles + loadedMiles;
+
+    const EMPTY_MILES_WARNING_THRESHOLD = 100;
+    const EMPTY_MILES_ERROR_THRESHOLD = 200;
+    const MILEAGE_VARIANCE_WARNING_PERCENT = 10;
+    const MILEAGE_VARIANCE_ERROR_PERCENT = 20;
+    const HIGH_TOTAL_MILES_THRESHOLD = 1000;
+
+    if (emptyMiles > EMPTY_MILES_ERROR_THRESHOLD) {
+      alerts.push({
+        type: 'excessive_empty_miles',
+        message: `Excessive empty miles detected: ${emptyMiles} miles. This significantly impacts profitability.`,
+        severity: 'error',
+        value: emptyMiles,
+        threshold: EMPTY_MILES_ERROR_THRESHOLD,
+      });
+      console.log('[LoadContext] Alert: Excessive empty miles (error):', emptyMiles);
+    } else if (emptyMiles > EMPTY_MILES_WARNING_THRESHOLD) {
+      alerts.push({
+        type: 'excessive_empty_miles',
+        message: `High empty miles: ${emptyMiles} miles. Consider optimizing routing.`,
+        severity: 'warning',
+        value: emptyMiles,
+        threshold: EMPTY_MILES_WARNING_THRESHOLD,
+      });
+      console.log('[LoadContext] Alert: High empty miles (warning):', emptyMiles);
+    }
+
+    if (actualMiles > 0 && load.claimedMiles > 0) {
+      const variance = actualMiles - load.claimedMiles;
+      const variancePercent = Math.abs((variance / load.claimedMiles) * 100);
+
+      if (variancePercent > MILEAGE_VARIANCE_ERROR_PERCENT) {
+        alerts.push({
+          type: 'mileage_variance',
+          message: `Large mileage variance: ${variance > 0 ? '+' : ''}${variance} miles (${variancePercent.toFixed(1)}%). Actual: ${actualMiles}, Claimed: ${load.claimedMiles}.`,
+          severity: 'error',
+          value: variance,
+          threshold: MILEAGE_VARIANCE_ERROR_PERCENT,
+        });
+        console.log('[LoadContext] Alert: Large mileage variance (error):', variance);
+      } else if (variancePercent > MILEAGE_VARIANCE_WARNING_PERCENT) {
+        alerts.push({
+          type: 'mileage_variance',
+          message: `Mileage variance detected: ${variance > 0 ? '+' : ''}${variance} miles (${variancePercent.toFixed(1)}%). Review route.`,
+          severity: 'warning',
+          value: variance,
+          threshold: MILEAGE_VARIANCE_WARNING_PERCENT,
+        });
+        console.log('[LoadContext] Alert: Mileage variance (warning):', variance);
+      }
+    }
+
+    if (actualMiles > HIGH_TOTAL_MILES_THRESHOLD) {
+      alerts.push({
+        type: 'high_total_miles',
+        message: `High total mileage: ${actualMiles} miles. Ensure adequate rest and compliance with HOS regulations.`,
+        severity: 'warning',
+        value: actualMiles,
+        threshold: HIGH_TOTAL_MILES_THRESHOLD,
+      });
+      console.log('[LoadContext] Alert: High total miles:', actualMiles);
+    }
+
+    console.log('[LoadContext] Total alerts generated:', alerts.length);
+    return alerts;
+  }, []);
+
   const addLoad = useCallback((load: Omit<Load, 'id' | 'createdAt'>) => {
     const newLoad: Load = {
       ...load,
@@ -58,11 +150,23 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
   }, [loads, saveLoads]);
 
   const updateLoad = useCallback((id: string, updates: Partial<Load>) => {
-    const updated = loads.map(load =>
-      load.id === id ? { ...load, ...updates } : load
-    );
+    console.log('[LoadContext] Updating load:', id, 'with updates:', Object.keys(updates));
+    const updated = loads.map(load => {
+      if (load.id === id) {
+        const updatedLoad = { ...load, ...updates };
+        
+        if (updates.odometerReadings) {
+          console.log('[LoadContext] Odometer readings updated, recalculating alerts');
+          const alerts = calculateMileageAlerts(updatedLoad);
+          updatedLoad.mileageAlerts = alerts;
+        }
+        
+        return updatedLoad;
+      }
+      return load;
+    });
     saveLoads(updated);
-  }, [loads, saveLoads]);
+  }, [loads, saveLoads, calculateMileageAlerts]);
 
   const deleteLoad = useCallback((id: string) => {
     const updated = loads.filter(load => load.id !== id);
@@ -130,6 +234,7 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     deleteLoad,
     getLoad,
     calculateLoadMetrics,
+    calculateMileageAlerts,
     isLoading: loadsQuery.isLoading,
-  }), [loads, addLoad, updateLoad, deleteLoad, getLoad, calculateLoadMetrics, loadsQuery.isLoading]);
+  }), [loads, addLoad, updateLoad, deleteLoad, getLoad, calculateLoadMetrics, calculateMileageAlerts, loadsQuery.isLoading]);
 });

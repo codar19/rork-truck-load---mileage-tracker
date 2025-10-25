@@ -8,7 +8,10 @@ import {
   Fuel,
   Calendar,
   Receipt,
+  AlertTriangle,
+  AlertCircle,
 } from 'lucide-react-native';
+import OdometerHistoryChart from '@/components/OdometerHistoryChart';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -161,6 +164,57 @@ export default function LoadDetailScreen() {
       updateLoad(id, updates);
       Alert.alert('Success', 'Expenses saved');
     }
+  };
+
+  const renderMileageAlerts = () => {
+    console.log('[LoadDetailScreen] Rendering mileage alerts for load:', id);
+    
+    if (!load.mileageAlerts || load.mileageAlerts.length === 0) {
+      console.log('[LoadDetailScreen] No mileage alerts to display');
+      return null;
+    }
+
+    console.log('[LoadDetailScreen] Displaying', load.mileageAlerts.length, 'alerts');
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Mileage Alerts</Text>
+        {load.mileageAlerts.map((alert, index) => {
+          const isError = alert.severity === 'error';
+          const icon = isError ? AlertCircle : AlertTriangle;
+          const iconColor = isError ? '#ef4444' : '#f59e0b';
+          const bgColor = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)';
+          const borderColor = isError ? '#ef4444' : '#f59e0b';
+
+          console.log('[LoadDetailScreen] Alert', index, ':', alert.type, alert.severity);
+
+          return (
+            <View
+              key={`${alert.type}-${index}`}
+              style={[
+                styles.alertCard,
+                { backgroundColor: bgColor, borderColor: borderColor },
+              ]}
+            >
+              <View style={styles.alertIcon}>
+                {icon({ size: 20, color: iconColor })}
+              </View>
+              <View style={styles.alertContent}>
+                <Text style={[styles.alertTitle, { color: iconColor }]}>
+                  {alert.severity === 'error' ? 'Critical Alert' : 'Warning'}
+                </Text>
+                <Text style={styles.alertMessage}>{alert.message}</Text>
+                <View style={styles.alertStats}>
+                  <Text style={styles.alertStatText}>
+                    Value: {alert.value} | Threshold: {alert.threshold}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
   };
 
   const renderOdometerTimeline = () => {
@@ -480,6 +534,15 @@ export default function LoadDetailScreen() {
           </View>
         </View>
 
+        {renderMileageAlerts()}
+        {hasDeliveryReading && (
+          <View style={styles.section}>
+            <OdometerHistoryChart
+              readings={load.odometerReadings}
+              claimedMiles={load.claimedMiles}
+            />
+          </View>
+        )}
         {renderOdometerTimeline()}
         {renderExpenses()}
         {renderReport()}
@@ -704,5 +767,37 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#334155',
     marginVertical: 8,
+  },
+  alertCard: {
+    flexDirection: 'row',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+  },
+  alertIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  alertContent: {
+    flex: 1,
+  },
+  alertTitle: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    marginBottom: 4,
+  },
+  alertMessage: {
+    fontSize: 13,
+    color: '#cbd5e1',
+    lineHeight: 18,
+    marginBottom: 6,
+  },
+  alertStats: {
+    marginTop: 4,
+  },
+  alertStatText: {
+    fontSize: 11,
+    color: '#94a3b8',
   },
 });

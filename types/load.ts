@@ -12,6 +12,14 @@ export interface FuelExpense {
   totalCost: number;
 }
 
+export interface MileageAlert {
+  type: 'excessive_empty_miles' | 'mileage_variance' | 'high_total_miles';
+  message: string;
+  severity: 'warning' | 'error';
+  value: number;
+  threshold: number;
+}
+
 export interface Load {
   id: string;
   status: LoadStatus;
@@ -38,6 +46,8 @@ export interface Load {
   
   createdAt: string;
   completedAt?: string;
+  
+  mileageAlerts?: MileageAlert[];
 }
 
 export interface LoadCalculations {
