@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, Redirect } from 'expo-router';
+import { useRouter, Redirect, Link } from 'expo-router';
 import { 
   Briefcase, 
   ChevronLeft, 
@@ -34,7 +34,9 @@ import {
   Mic,
   Bot,
   Calculator,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Lightbulb,
+  FileCode
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -723,8 +725,22 @@ export default function BusinessModelScreen() {
                       />
                     </View>
                     {feature.systemDetermined && (
-                      <View style={styles.systemBadge}>
-                        <Text style={styles.systemBadgeText}>System Determined</Text>
+                      <View style={styles.actionButtonsContainer}>
+                        <View style={styles.systemBadge}>
+                          <Text style={styles.systemBadgeText}>System Determined</Text>
+                        </View>
+                        <Link href={`/suggestion/${feature.id}?type=${feature.status}`} asChild>
+                          <TouchableOpacity style={styles.actionButton}>
+                            <Lightbulb size={14} color="#f59e0b" />
+                            <Text style={styles.actionButtonText}>Suggestions</Text>
+                          </TouchableOpacity>
+                        </Link>
+                        <Link href={`/suggestion/${feature.id}?type=${feature.status}&view=prompt`} asChild>
+                          <TouchableOpacity style={styles.actionButton}>
+                            <FileCode size={14} color="#3b82f6" />
+                            <Text style={styles.actionButtonText}>Prompt</Text>
+                          </TouchableOpacity>
+                        </Link>
                       </View>
                     )}
                   </View>
@@ -1011,9 +1027,14 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     lineHeight: 18,
   },
-  systemBadge: {
-    alignSelf: 'flex-start',
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 12,
+  },
+  systemBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
@@ -1025,6 +1046,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600' as const,
     color: '#3b82f6',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  actionButtonText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: '#94a3b8',
   },
   iconContainer: {
     width: 40,
