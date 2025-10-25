@@ -47,6 +47,9 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     if (promptsQuery.data !== undefined) {
       const prompts = promptsQuery.data;
       
+      const autoPrompts: ExecutedPrompt[] = [];
+      let maxPromptNumber = 0;
+
       // Auto-mark prompt #1 (Load Management) as executed if not already
       const hasPrompt1 = prompts.some((p: ExecutedPrompt) => p.featureId === '2' && p.type === 'done');
       
@@ -62,12 +65,36 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
           executedAt: '2025-10-24T00:00:00.000Z',
           source: 'business-model',
         };
-        
-        const updatedPrompts = [prompt1, ...prompts];
+        autoPrompts.push(prompt1);
+        maxPromptNumber = Math.max(maxPromptNumber, 1);
+      }
+
+      // Auto-mark prompt #2 (Odometer Tracking) as executed if not already
+      const hasPrompt2 = prompts.some((p: ExecutedPrompt) => p.featureId === '3' && p.type === 'done');
+      
+      if (!hasPrompt2) {
+        console.log('[ExecutedPromptsContext] Auto-marking prompt #2 (Odometer Tracking) as executed');
+        const prompt2: ExecutedPrompt = {
+          id: '3-done-auto',
+          promptNumber: 2,
+          featureId: '3',
+          featureTitle: 'Odometer Tracking',
+          type: 'done',
+          prompt: `I need to improve the "Odometer Tracking" feature in my trucking management app.\n\nCurrent feature: Track odometer readings at dispatch, pickup, and delivery\n\nPlease implement these improvements:\n1. Add odometer history chart\n2. Implement mileage alerts\n\nRequirements:\n- Maintain compatibility with existing functionality\n- Follow the current code structure and patterns\n- Use TypeScript with proper typing\n- Add console logs for debugging\n- Test on both mobile and web\n- Use React Native components and StyleSheet\n\nPlease implement these improvements step by step.`,
+          executedAt: '2025-10-25T00:00:00.000Z',
+          source: 'business-model',
+        };
+        autoPrompts.push(prompt2);
+        maxPromptNumber = Math.max(maxPromptNumber, 2);
+      }
+      
+      if (autoPrompts.length > 0) {
+        const updatedPrompts = [...autoPrompts, ...prompts];
         setExecutedPrompts(updatedPrompts);
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPrompts));
-        AsyncStorage.setItem(COUNTER_KEY, '2');
-        setPromptCounter(2);
+        const newCounter = maxPromptNumber + 1;
+        AsyncStorage.setItem(COUNTER_KEY, newCounter.toString());
+        setPromptCounter(newCounter);
       } else {
         setExecutedPrompts(prompts);
       }
