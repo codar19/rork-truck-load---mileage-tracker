@@ -95,12 +95,24 @@ export default function AddExpenseScreen() {
   };
 
   const handleSubmit = () => {
+    console.log('[AddExpense] Submit button pressed');
+    console.log('[AddExpense] Current state:', {
+      user: user?.id,
+      category: selectedCategory,
+      amount,
+      date,
+      location,
+      description,
+    });
+    
     if (!user) {
+      console.log('[AddExpense] Error: User not authenticated');
       Alert.alert('Error', 'User not authenticated');
       return;
     }
 
     if (!amount.trim() || isNaN(Number(amount)) || Number(amount) <= 0) {
+      console.log('[AddExpense] Error: Invalid amount');
       Alert.alert('Error', 'Please enter a valid amount');
       return;
     }
