@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'expo-router';
-import { Home, Settings, BarChart3 } from 'lucide-react-native';
+import { Home, Settings, BarChart3, Plus } from 'lucide-react-native';
 import React from 'react';
 import {
   StyleSheet,
@@ -85,6 +85,13 @@ export default function FooterNav() {
             </Text>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push('/add-load')}
+          testID="footer-add-load"
+        >
+          <Plus size={28} color="#ffffff" strokeWidth={2.5} />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -101,6 +108,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingTop: 8,
     paddingBottom: 4,
+    alignItems: 'center',
+    position: 'relative' as const,
   },
   button: {
     flex: 1,
@@ -115,5 +124,24 @@ const styles = StyleSheet.create({
   },
   labelActive: {
     color: '#f59e0b',
+  },
+  addButton: {
+    position: 'absolute' as const,
+    right: 16,
+    bottom: 28,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#f59e0b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
