@@ -1,7 +1,8 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
+import { useOffers } from '@/contexts/OfferContext';
 import { useRouter } from 'expo-router';
-import { Truck, Plus, Package, MapPin, LogOut, DollarSign, TrendingUp } from 'lucide-react-native';
+import { Truck, Plus, Package, MapPin, LogOut, DollarSign, TrendingUp, Search, ArrowRight } from 'lucide-react-native';
 import FooterNav from '@/components/FooterNav';
 import React, { useMemo } from 'react';
 import {
@@ -17,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function DriverDashboard() {
   const { user, logout } = useAuth();
   const { loads, calculateLoadMetrics } = useLoads();
+  const { availableLoads, getOffersByDriver } = useOffers();
   const router = useRouter();
 
   const driverLoads = useMemo(
@@ -32,6 +34,16 @@ export default function DriverDashboard() {
   const completedLoads = useMemo(
     () => driverLoads.filter(l => l.status === 'delivered'),
     [driverLoads]
+  );
+
+  const myOffers = useMemo(
+    () => (user?.id ? getOffersByDriver(user.id) : []),
+    [user?.id, getOffersByDriver]
+  );
+
+  const pendingOffers = useMemo(
+    () => myOffers.filter(o => o.status === 'pending'),
+    [myOffers]
   );
 
   const stats = useMemo(() => {
@@ -154,6 +166,26 @@ export default function DriverDashboard() {
       </SafeAreaView>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        <TouchableOpacity
+          style={styles.loadBoardCard}
+          onPress={() => router.push('/load-board')}
+          testID="load-board-quick-access"
+        >
+          <View style={styles.loadBoardCardContent}>
+            <View style={styles.loadBoardIconContainer}>
+              <Search size={28} color="#f59e0b" />
+            </View>
+            <View style={styles.loadBoardTextContainer}>
+              <Text style={styles.loadBoardTitle}>Find New Loads</Text>
+              <Text style={styles.loadBoardSubtitle}>
+                {availableLoads.length} loads available
+                {pendingOffers.length > 0 && ` · ${pendingOffers.length} pending offer${pendingOffers.length !== 1 ? 's' : ''}`}
+              </Text>
+            </View>
+            <ArrowRight size={24} color="#f59e0b" />
+          </View>
+        </TouchableOpacity>
+
         {driverLoads.length === 0 ? (
           <View style={styles.emptyState}>
             <Package size={64} color="#475569" strokeWidth={1.5} />
@@ -409,5 +441,39 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700' as const,
+  },
+  loadBoardCard: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#f59e0b',
+  },
+  loadBoardCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadBoardIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#0f172a',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadBoardTextContainer: {
+    flex: 1,
+  },
+  loadBoardTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#f1f5f9',
+    marginBottom: 4,
+  },
+  loadBoardSubtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
   },
 });

@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'expo-router';
-import { Home, Settings, BarChart3, Plus } from 'lucide-react-native';
+import { Home, Settings, BarChart3, Plus, Package } from 'lucide-react-native';
 import React from 'react';
 import {
   StyleSheet,
@@ -37,6 +37,13 @@ export default function FooterNav() {
     });
 
     if (user.role === 'driver') {
+      buttons.push({
+        icon: <Package size={24} color={pathname === '/load-board' ? '#f59e0b' : '#64748b'} />,
+        label: 'Load Board',
+        onPress: () => router.push('/load-board'),
+        active: pathname === '/load-board',
+        testID: 'footer-load-board',
+      });
       buttons.push({
         icon: <BarChart3 size={24} color={pathname === '/analytics' ? '#f59e0b' : '#64748b'} />,
         label: 'Analytics',
