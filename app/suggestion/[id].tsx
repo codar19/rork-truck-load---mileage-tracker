@@ -150,7 +150,7 @@ export default function SuggestionDetail() {
   const { id, type, view } = useLocalSearchParams();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature, nextPromptNumber } = useExecutedPrompts();
+  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature, nextPromptNumber, getPromptNumberForFeature } = useExecutedPrompts();
 
   const featureId = Array.isArray(id) ? id[0] : id;
   const featureType = (Array.isArray(type) ? type[0] : type) as 'done' | 'undone';
@@ -244,6 +244,7 @@ export default function SuggestionDetail() {
 
   const isExecuted = hasExecutedPrompt(featureId, featureType);
   const executionHistory = getExecutedPromptsByFeature(featureId, featureType);
+  const promptNumber = getPromptNumberForFeature(featureId, featureType) || nextPromptNumber;
 
   const statusColor = featureType === 'done' ? '#22c55e' : '#f59e0b';
   const statusText = featureType === 'done' ? 'Improvement Suggestions' : 'Implementation Suggestions';
@@ -277,8 +278,14 @@ export default function SuggestionDetail() {
             <View style={styles.promptIdSection}>
               <View style={styles.promptIdBadge}>
                 <Text style={styles.promptIdLabel}>Prompt ID</Text>
-                <Text style={styles.promptIdNumber}>#{nextPromptNumber}</Text>
+                <Text style={styles.promptIdNumber}>#{promptNumber}</Text>
               </View>
+              {isExecuted && (
+                <View style={styles.executedBadge}>
+                  <CheckCheck size={16} color="#22c55e" />
+                  <Text style={styles.executedBadgeText}>Executed</Text>
+                </View>
+              )}
             </View>
             <Text style={styles.title}>{feature.title}</Text>
             <View style={styles.badges}>
@@ -335,12 +342,12 @@ export default function SuggestionDetail() {
             {isExecuted ? (
               <View style={styles.executedIndicator}>
                 <CheckCheck size={20} color="#22c55e" />
-                <Text style={styles.executedText}>Executed</Text>
+                <Text style={styles.executedText}>Already Executed (#{promptNumber})</Text>
               </View>
             ) : (
               <TouchableOpacity onPress={handleExecutePrompt} style={styles.executeButton}>
                 <Clock size={20} color="#ffffff" />
-                <Text style={styles.executeButtonText}>Mark as Executed (#{nextPromptNumber})</Text>
+                <Text style={styles.executeButtonText}>Mark as Executed (#{promptNumber})</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -692,7 +699,9 @@ const styles = StyleSheet.create({
   },
   promptIdSection: {
     marginBottom: 12,
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   promptIdBadge: {
     flexDirection: 'row',
@@ -714,5 +723,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800' as const,
     color: '#ffffff',
+  },
+  executedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#065f46',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 6,
+  },
+  executedBadgeText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#22c55e',
   },
 });

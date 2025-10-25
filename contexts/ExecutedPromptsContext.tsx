@@ -45,7 +45,32 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
 
   useEffect(() => {
     if (promptsQuery.data !== undefined) {
-      setExecutedPrompts(promptsQuery.data);
+      const prompts = promptsQuery.data;
+      
+      // Auto-mark prompt #1 (Load Management) as executed if not already
+      const hasPrompt1 = prompts.some((p: ExecutedPrompt) => p.featureId === '2' && p.type === 'done');
+      
+      if (!hasPrompt1) {
+        console.log('[ExecutedPromptsContext] Auto-marking prompt #1 (Load Management) as executed');
+        const prompt1: ExecutedPrompt = {
+          id: '2-done-auto',
+          promptNumber: 1,
+          featureId: '2',
+          featureTitle: 'Load Management',
+          type: 'done',
+          prompt: `I need to improve the "Load Management" feature in my trucking management app.\n\nCurrent feature: Add, edit, and track loads with all details\n\nPlease implement these improvements:\n1. Add load templates for frequent routes\n2. Implement bulk load operations\n\nRequirements:\n- Maintain compatibility with existing functionality\n- Follow the current code structure and patterns\n- Use TypeScript with proper typing\n- Add console logs for debugging\n- Test on both mobile and web\n- Use React Native components and StyleSheet\n\nPlease implement these improvements step by step.`,
+          executedAt: '2025-10-24T00:00:00.000Z',
+          source: 'business-model',
+        };
+        
+        const updatedPrompts = [prompt1, ...prompts];
+        setExecutedPrompts(updatedPrompts);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPrompts));
+        AsyncStorage.setItem(COUNTER_KEY, '2');
+        setPromptCounter(2);
+      } else {
+        setExecutedPrompts(prompts);
+      }
     }
   }, [promptsQuery.data]);
 
@@ -95,6 +120,11 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     mutate([]);
   }, [mutate]);
 
+  const getPromptNumberForFeature = useCallback((featureId: string, type: 'done' | 'undone') => {
+    const prompt = executedPrompts.find(p => p.featureId === featureId && p.type === type);
+    return prompt?.promptNumber;
+  }, [executedPrompts]);
+
   return useMemo(() => ({
     executedPrompts,
     addExecutedPrompt,
@@ -102,6 +132,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     hasExecutedPrompt,
     getAllExecutedPrompts,
     clearExecutedPrompts,
+    getPromptNumberForFeature,
     isLoading: promptsQuery.isLoading || counterQuery.isLoading,
     nextPromptNumber: promptCounter,
   }), [
@@ -111,6 +142,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     hasExecutedPrompt,
     getAllExecutedPrompts,
     clearExecutedPrompts,
+    getPromptNumberForFeature,
     promptsQuery.isLoading,
     counterQuery.isLoading,
     promptCounter,
