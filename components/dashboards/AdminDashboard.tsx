@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLoads } from '@/contexts/LoadContext';
 import { MOCK_DISPATCHERS, MOCK_DRIVERS, ALL_USERS } from '@/mocks/users';
 import { useRouter } from 'expo-router';
-import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings, CheckCircle, Circle, AlertCircle, Lightbulb, ArrowRight } from 'lucide-react-native';
+import { Shield, Users, Package, LogOut, DollarSign, Truck, TrendingUp, Activity, Settings, CheckCircle, Circle, AlertCircle, Lightbulb } from 'lucide-react-native';
 import FooterNav from '@/components/FooterNav';
 import React, { useMemo, useState } from 'react';
 import {
@@ -22,15 +22,16 @@ type Feature = {
   title: string;
   status: FeatureStatus;
   note?: string;
+  suggestionIds?: string[];
 };
 
 const MUST_HAVE_FEATURES: Feature[] = [
   { id: 'auth', title: 'User Authentication (Admin/Dispatcher/Driver)', status: 'done' },
   { id: 'dashboard', title: 'Role-based Dashboards', status: 'done' },
-  { id: 'load-crud', title: 'Load Management (Create/Edit/Delete)', status: 'done' },
+  { id: 'load-crud', title: 'Load Management (Create/Edit/Delete)', status: 'done', suggestionIds: ['document-scanner'] },
   { id: 'load-metrics', title: 'Load Profit Calculations & Metrics', status: 'done' },
-  { id: 'load-status', title: 'Load Status Tracking', status: 'done' },
-  { id: 'user-stats', title: 'User/Dispatcher/Driver Statistics', status: 'done' },
+  { id: 'load-status', title: 'Load Status Tracking', status: 'done', suggestionIds: ['voice-commands', 'customer-portal'] },
+  { id: 'user-stats', title: 'User/Dispatcher/Driver Statistics', status: 'done', suggestionIds: ['driver-scorecard'] },
   { id: 'settings', title: 'Settings Navigation & Structure', status: 'done' },
 ];
 
@@ -44,19 +45,24 @@ const GOOD_TO_HAVE_FEATURES: Feature[] = [
   { id: 'settings-notifications', title: 'Notification Preferences', status: 'done' },
   { id: 'stripe-integration', title: 'Stripe Payment Integration', status: 'blocked', note: 'Need: Stripe API keys (Publishable & Secret key)' },
   { id: 'push-notifications', title: 'Push Notifications', status: 'blocked', note: 'Need: Firebase/Expo Push Notification setup & credentials' },
-  { id: 'real-time-tracking', title: 'Real-time GPS Load Tracking', status: 'blocked', note: 'Need: Real-time database (Firebase Realtime DB or Supabase real-time) + GPS permissions' },
-  { id: 'document-upload', title: 'Document Upload (BOL, POD)', status: 'blocked', note: 'Need: Cloud storage (AWS S3, Cloudinary, or Firebase Storage) API keys' },
+  { id: 'real-time-tracking', title: 'Real-time GPS Load Tracking', status: 'blocked', note: 'Need: Real-time database (Firebase Realtime DB or Supabase real-time) + GPS permissions', suggestionIds: ['route-optimization', 'customer-portal'] },
+  { id: 'document-upload', title: 'Document Upload (BOL, POD)', status: 'blocked', note: 'Need: Cloud storage (AWS S3, Cloudinary, or Firebase Storage) API keys', suggestionIds: ['document-scanner'] },
   { id: 'sms-notifications', title: 'SMS Notifications', status: 'blocked', note: 'Need: Twilio API credentials (Account SID, Auth Token, Phone Number)' },
   { id: 'email-notifications', title: 'Email Notifications', status: 'blocked', note: 'Need: Email service (SendGrid, Mailgun, or AWS SES) API keys' },
   { id: 'export-reports', title: 'Export Reports (PDF/CSV)', status: 'pending', note: 'Can implement with react-native-pdf or expo-file-system' },
   { id: 'multi-language', title: 'Multi-language Support', status: 'pending', note: 'Can implement with i18n library' },
   { id: 'dark-mode-toggle', title: 'Dark/Light Mode Toggle', status: 'pending', note: 'Can implement with theme context' },
   { id: 'offline-mode', title: 'Offline Mode Support', status: 'pending', note: 'Can implement with AsyncStorage caching' },
-  { id: 'rate-calculator', title: 'Rate Calculator Tool', status: 'pending', note: 'Can implement with custom logic' },
+  { id: 'rate-calculator', title: 'Rate Calculator Tool', status: 'pending', note: 'Can implement with custom logic', suggestionIds: ['route-optimization', 'fuel-optimizer'] },
   { id: 'driver-chat', title: 'In-app Chat (Driver-Dispatcher)', status: 'blocked', note: 'Need: Real-time messaging service (Firebase, Pusher, or custom WebSocket server)' },
+  { id: 'smart-load-assignment', title: 'Smart Load Assignment', status: 'pending', note: 'Can implement with AI-powered matching algorithm', suggestionIds: ['ai-load-matching'] },
+  { id: 'expense-tracking', title: 'Expense Tracking', status: 'pending', note: 'Can implement with AsyncStorage and photo capture', suggestionIds: ['expense-tracker'] },
+  { id: 'load-marketplace', title: 'Load Marketplace', status: 'pending', note: 'Can implement with marketplace context and matching', suggestionIds: ['load-marketplace'] },
+  { id: 'maintenance-tracking', title: 'Maintenance Tracking', status: 'pending', note: 'Can implement with maintenance scheduler and alerts', suggestionIds: ['maintenance-scheduler'] },
+  { id: 'fuel-optimization', title: 'Fuel Optimization', status: 'pending', note: 'Can implement with fuel finder and MPG tracking', suggestionIds: ['fuel-optimizer'] },
 ];
 
-type TabType = 'overview' | 'must-have' | 'good-to-have' | 'suggestions';
+type TabType = 'overview' | 'must-have' | 'good-to-have';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -121,12 +127,37 @@ export default function AdminDashboard() {
 
     const config = statusConfig[feature.status];
     const IconComponent = config.icon;
+    const hasSuggestions = feature.suggestionIds && feature.suggestionIds.length > 0;
+    const suggestions = hasSuggestions 
+      ? SYSTEM_SUGGESTIONS.filter(s => feature.suggestionIds?.includes(s.id))
+      : [];
 
     return (
       <View key={feature.id} style={styles.featureItem}>
         <View style={styles.featureHeader}>
           <IconComponent size={20} color={config.color} />
           <Text style={styles.featureTitle}>{feature.title}</Text>
+          {hasSuggestions && (
+            <TouchableOpacity
+              onPress={() => {
+                if (suggestions.length === 1) {
+                  router.push(`/suggestion/${suggestions[0].id}`);
+                } else {
+                  console.log('Multiple suggestions available', suggestions);
+                  router.push(`/suggestion/${suggestions[0].id}`);
+                }
+              }}
+              style={styles.suggestionIconButton}
+              testID={`suggestion-${feature.id}`}
+            >
+              <Lightbulb size={20} color="#f59e0b" />
+              {suggestions.length > 1 && (
+                <View style={styles.suggestionCount}>
+                  <Text style={styles.suggestionCountText}>{suggestions.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
         <View style={styles.featureFooter}>
           <View style={[styles.statusBadge, { backgroundColor: config.color + '20' }]}>
@@ -208,15 +239,6 @@ export default function AdminDashboard() {
           <Text style={[styles.tabText, activeTab === 'good-to-have' && styles.activeTabText]}>Good-to-Have</Text>
           <View style={styles.tabBadge}>
             <Text style={styles.tabBadgeText}>{goodToHaveStats.done}/{goodToHaveStats.total}</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tab, activeTab === 'suggestions' && styles.activeTab]}
-          onPress={() => setActiveTab('suggestions')}
-        >
-          <Text style={[styles.tabText, activeTab === 'suggestions' && styles.activeTabText]}>Suggestions</Text>
-          <View style={styles.tabBadge}>
-            <Text style={styles.tabBadgeText}>{SYSTEM_SUGGESTIONS.length}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -383,66 +405,7 @@ export default function AdminDashboard() {
           </View>
         )}
 
-        {activeTab === 'suggestions' && (
-          <View style={styles.section}>
-            <View style={styles.suggestionsHeader}>
-              <Lightbulb size={24} color="#f59e0b" />
-              <Text style={styles.sectionTitle}>AI-Powered Feature Suggestions</Text>
-            </View>
-            <Text style={styles.suggestionsDescription}>
-              System-generated suggestions to enhance your trucking management platform. Each suggestion includes detailed implementation prompts you can copy and use.
-            </Text>
-            <View style={styles.suggestionsList}>
-              {SYSTEM_SUGGESTIONS.map((suggestion) => {
-                const categoryColors = {
-                  feature: '#3b82f6',
-                  enhancement: '#8b5cf6',
-                  integration: '#22c55e',
-                  optimization: '#f59e0b',
-                };
 
-                const priorityColors = {
-                  low: '#64748b',
-                  medium: '#f59e0b',
-                  high: '#ef4444',
-                };
-
-                const categoryColor = categoryColors[suggestion.category];
-                const priorityColor = priorityColors[suggestion.priority];
-
-                return (
-                  <TouchableOpacity
-                    key={suggestion.id}
-                    style={styles.suggestionCard}
-                    onPress={() => router.push(`/suggestion/${suggestion.id}`)}
-                    testID={`suggestion-${suggestion.id}`}
-                  >
-                    <View style={styles.suggestionHeader}>
-                      <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
-                      <ArrowRight size={20} color="#64748b" />
-                    </View>
-                    <Text style={styles.suggestionDescription} numberOfLines={2}>
-                      {suggestion.description}
-                    </Text>
-                    <View style={styles.suggestionMeta}>
-                      <View style={[styles.suggestionBadge, { backgroundColor: categoryColor + '20' }]}>
-                        <Text style={[styles.suggestionBadgeText, { color: categoryColor }]}>
-                          {suggestion.category}
-                        </Text>
-                      </View>
-                      <View style={[styles.suggestionBadge, { backgroundColor: priorityColor + '20' }]}>
-                        <Text style={[styles.suggestionBadgeText, { color: priorityColor }]}>
-                          {suggestion.priority}
-                        </Text>
-                      </View>
-                      <Text style={styles.suggestionTime}>{suggestion.estimatedTime}</Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        )}
       </ScrollView>
 
       <FooterNav />
@@ -785,5 +748,27 @@ const styles = StyleSheet.create({
   suggestionTime: {
     fontSize: 12,
     color: '#64748b',
+  },
+  suggestionIconButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    position: 'relative',
+  },
+  suggestionCount: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#f59e0b',
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  suggestionCountText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#ffffff',
   },
 });
