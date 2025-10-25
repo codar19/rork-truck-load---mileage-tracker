@@ -125,6 +125,23 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     return prompt?.promptNumber;
   }, [executedPrompts]);
 
+  const getUniquePromptId = useCallback((featureId: string, type: 'done' | 'undone') => {
+    // Generate a deterministic unique ID for each feature+type combination
+    // This ensures each prompt has a unique ID even before execution
+    const hashCode = (str: string): number => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash);
+    };
+    
+    const combinedKey = `${featureId}-${type}`;
+    return hashCode(combinedKey) % 10000;
+  }, []);
+
   return useMemo(() => ({
     executedPrompts,
     addExecutedPrompt,
@@ -133,6 +150,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     getAllExecutedPrompts,
     clearExecutedPrompts,
     getPromptNumberForFeature,
+    getUniquePromptId,
     isLoading: promptsQuery.isLoading || counterQuery.isLoading,
     nextPromptNumber: promptCounter,
   }), [
@@ -143,6 +161,7 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
     getAllExecutedPrompts,
     clearExecutedPrompts,
     getPromptNumberForFeature,
+    getUniquePromptId,
     promptsQuery.isLoading,
     counterQuery.isLoading,
     promptCounter,
