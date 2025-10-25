@@ -168,26 +168,28 @@ export default function AddExpenseScreen() {
   const activeLoads = userLoads.filter(load => load.status !== 'delivered');
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <ChevronLeft size={24} color="#f1f5f9" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Expense</Text>
-          <View style={{ width: 24 }} />
-        </View>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <ChevronLeft size={24} color="#f1f5f9" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Add Expense</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Category</Text>
@@ -360,18 +362,18 @@ export default function AddExpenseScreen() {
             )}
           </View>
         </ScrollView>
+      </KeyboardAvoidingView>
 
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={handleSubmit}
-          >
-            <Check size={20} color="#ffffff" />
-            <Text style={styles.submitButtonText}>Add Expense</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+        >
+          <Check size={20} color="#ffffff" />
+          <Text style={styles.submitButtonText}>Add Expense</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -380,7 +382,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  safeArea: {
+  keyboardView: {
     flex: 1,
   },
   header: {
