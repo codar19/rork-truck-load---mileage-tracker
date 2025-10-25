@@ -12,6 +12,8 @@ import {
   Filter,
   ArrowLeft,
   ListOrdered,
+  ArrowUpDown,
+  ChevronDown,
 } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
 import {
@@ -23,6 +25,7 @@ import {
   StatusBar,
   TextInput,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,7 +34,9 @@ export default function LoadBoardScreen() {
   const { availableLoads, hasDriverOfferedOnLoad, isLoading } = useOffers();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'pay' | 'miles' | 'date'>('date');
+  const [sortBy, setSortBy] = useState<keyof Pick<typeof availableLoads[0], 'suggestedPay' | 'claimedMiles' | 'pickupDate' | 'deliveryDate' | 'weight' | 'origin' | 'destination' | 'equipment' | 'createdAt'>>('pickupDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const filteredLoads = useMemo(() => {
     let filtered = availableLoads;
@@ -48,19 +53,30 @@ export default function LoadBoardScreen() {
     }
 
     filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'pay':
-          return b.suggestedPay - a.suggestedPay;
-        case 'miles':
-          return b.claimedMiles - a.claimedMiles;
-        case 'date':
-        default:
-          return new Date(a.pickupDate).getTime() - new Date(b.pickupDate).getTime();
+      let comparison = 0;
+      
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else if (typeof aValue === 'string' && typeof bValue === 'string') {
+        if (sortBy === 'pickupDate' || sortBy === 'deliveryDate' || sortBy === 'createdAt') {
+          comparison = new Date(aValue).getTime() - new Date(bValue).getTime();
+        } else {
+          comparison = aValue.localeCompare(bValue);
+        }
       }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
     });
 
+    console.log(`[LoadBoard] Filtered and sorted ${filtered.length} loads by ${sortBy} (${sortOrder})`);
+
     return filtered;
-  }, [availableLoads, searchQuery, sortBy]);
+  }, [availableLoads, searchQuery, sortBy, sortOrder]);
+
+
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -179,40 +195,102 @@ export default function LoadBoardScreen() {
 
           <View style={styles.filtersContainer}>
             <Filter size={16} color="#94a3b8" />
-            <Text style={styles.filterLabel}>Sort by:</Text>
+            <Text style={styles.filterLabel}>Sort:</Text>
             <TouchableOpacity
-              style={[styles.filterButton, sortBy === 'date' && styles.filterButtonActive]}
-              onPress={() => setSortBy('date')}
+              style={styles.sortSelectorButton}
+              onPress={() => setShowSortModal(true)}
             >
-              <Text
-                style={[styles.filterButtonText, sortBy === 'date' && styles.filterButtonTextActive]}
-              >
-                Pickup Date
+              <Text style={styles.sortSelectorText} numberOfLines={1}>
+                {sortBy === 'suggestedPay' ? 'Pay' :
+                 sortBy === 'claimedMiles' ? 'Miles' :
+                 sortBy === 'pickupDate' ? 'Pickup Date' :
+                 sortBy === 'deliveryDate' ? 'Delivery Date' :
+                 sortBy === 'weight' ? 'Weight' :
+                 sortBy === 'origin' ? 'Origin' :
+                 sortBy === 'destination' ? 'Destination' :
+                 sortBy === 'equipment' ? 'Equipment' :
+                 sortBy === 'createdAt' ? 'Posted Date' : sortBy}
               </Text>
+              <ChevronDown size={16} color="#f59e0b" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.filterButton, sortBy === 'pay' && styles.filterButtonActive]}
-              onPress={() => setSortBy('pay')}
+              style={styles.orderButton}
+              onPress={() => {
+                setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                console.log(`[LoadBoard] Toggled sort order to ${sortOrder === 'asc' ? 'desc' : 'asc'}`);
+              }}
             >
-              <Text
-                style={[styles.filterButtonText, sortBy === 'pay' && styles.filterButtonTextActive]}
-              >
-                Pay
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterButton, sortBy === 'miles' && styles.filterButtonActive]}
-              onPress={() => setSortBy('miles')}
-            >
-              <Text
-                style={[styles.filterButtonText, sortBy === 'miles' && styles.filterButtonTextActive]}
-              >
-                Miles
+              <ArrowUpDown size={16} color="#f59e0b" />
+              <Text style={styles.orderButtonText}>
+                {sortOrder === 'asc' ? 'A→Z' : 'Z→A'}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
+
+      <Modal
+        visible={showSortModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSortModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowSortModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Sort By</Text>
+            
+            {[
+              { key: 'suggestedPay' as const, label: 'Pay' },
+              { key: 'claimedMiles' as const, label: 'Miles' },
+              { key: 'pickupDate' as const, label: 'Pickup Date' },
+              { key: 'deliveryDate' as const, label: 'Delivery Date' },
+              { key: 'weight' as const, label: 'Weight' },
+              { key: 'origin' as const, label: 'Origin (City)' },
+              { key: 'destination' as const, label: 'Destination (City)' },
+              { key: 'equipment' as const, label: 'Equipment Type' },
+              { key: 'createdAt' as const, label: 'Posted Date' },
+            ].map(({ key, label }) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.modalOption,
+                  sortBy === key && styles.modalOptionActive
+                ]}
+                onPress={() => {
+                  setSortBy(key);
+                  setShowSortModal(false);
+                  console.log(`[LoadBoard] Sort changed to ${key}`);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.modalOptionText,
+                    sortBy === key && styles.modalOptionTextActive
+                  ]}
+                >
+                  {label}
+                </Text>
+                {sortBy === key && (
+                  <View style={styles.modalOptionCheck}>
+                    <Text style={styles.modalOptionCheckText}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowSortModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -317,6 +395,110 @@ const styles = StyleSheet.create({
   },
   filterButtonTextActive: {
     color: '#ffffff',
+  },
+  sortSelectorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    maxWidth: 140,
+  },
+  sortSelectorText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#f59e0b',
+    flex: 1,
+  },
+  orderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+  },
+  orderButtonText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#f59e0b',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: '#ffffff',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#0f172a',
+  },
+  modalOptionActive: {
+    backgroundColor: '#f59e0b',
+  },
+  modalOptionText: {
+    fontSize: 15,
+    color: '#cbd5e1',
+    fontWeight: '500' as const,
+  },
+  modalOptionTextActive: {
+    color: '#ffffff',
+    fontWeight: '600' as const,
+  },
+  modalOptionCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalOptionCheckText: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#f59e0b',
+  },
+  modalCloseButton: {
+    marginTop: 12,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#334155',
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: '#94a3b8',
   },
   loadingContainer: {
     flex: 1,
