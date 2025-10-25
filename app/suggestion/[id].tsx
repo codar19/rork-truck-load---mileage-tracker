@@ -150,7 +150,7 @@ export default function SuggestionDetail() {
   const { id, type, view } = useLocalSearchParams();
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature, getPromptNumberForFeature, getUniquePromptId } = useExecutedPrompts();
+  const { addExecutedPrompt, hasExecutedPrompt, getExecutedPromptsByFeature, getOrAssignPromptNumber } = useExecutedPrompts();
 
   const featureId = Array.isArray(id) ? id[0] : id;
   const featureType = (Array.isArray(type) ? type[0] : type) as 'done' | 'undone';
@@ -244,9 +244,7 @@ export default function SuggestionDetail() {
 
   const isExecuted = hasExecutedPrompt(featureId, featureType);
   const executionHistory = getExecutedPromptsByFeature(featureId, featureType);
-  const executedPromptNumber = getPromptNumberForFeature(featureId, featureType);
-  const uniquePromptId = getUniquePromptId(featureId, featureType);
-  const promptNumber = executedPromptNumber || uniquePromptId;
+  const promptNumber = getOrAssignPromptNumber(featureId, featureType);
 
   const statusColor = featureType === 'done' ? '#22c55e' : '#f59e0b';
   const statusText = featureType === 'done' ? 'Improvement Suggestions' : 'Implementation Suggestions';
