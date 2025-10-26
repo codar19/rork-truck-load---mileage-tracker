@@ -12,14 +12,3 @@ export type Suggestion = {
   requirements?: string[];
   prompt: string;
 };
-
-export type ExecutedPrompt = {
-  id: string;
-  promptNumber: number;
-  featureId: string;
-  featureTitle: string;
-  type: 'done' | 'undone';
-  prompt: string;
-  executedAt: string;
-  source: 'business-model' | 'system-suggestion';
-};

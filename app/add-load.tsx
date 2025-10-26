@@ -1,5 +1,4 @@
 import { useLoads } from '@/contexts/LoadContext';
-import { useLoadTemplates } from '@/contexts/LoadTemplateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { 
@@ -12,7 +11,6 @@ import {
   ChevronLeft,
   Check,
   Truck,
-  BookmarkPlus,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -40,7 +38,7 @@ const LoadSchema = z.object({
   deliveryDate: z.string().optional().describe('Delivery date if mentioned'),
 });
 
-type StepId = 'method' | 'template' | 'dispatch' | 'details' | 'odometer' | 'review';
+type StepId = 'method' | 'dispatch' | 'details' | 'odometer' | 'review';
 
 interface Step {
   id: StepId;
@@ -50,10 +48,7 @@ interface Step {
 
 export default function AddLoadScreen() {
   const [currentStep, setCurrentStep] = useState<StepId>('method');
-  const [method, setMethod] = useState<'ai' | 'manual' | 'template' | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
-  const [templateName, setTemplateName] = useState('');
+  const [method, setMethod] = useState<'ai' | 'manual' | null>(null);
   
   const [dispatcherText, setDispatcherText] = useState('');
   const [origin, setOrigin] = useState('');
@@ -67,17 +62,12 @@ export default function AddLoadScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   
   const { addLoad } = useLoads();
-  const { templates, incrementTemplateUsage, addTemplate, getRecentTemplates } = useLoadTemplates();
   const { user } = useAuth();
   const router = useRouter();
 
-  const recentTemplates = getRecentTemplates(5);
-
   const steps: Step[] = [
     { id: 'method', title: 'Choose Method', icon: <Sparkles size={20} color="#f59e0b" /> },
-    ...(method === 'template'
-      ? [{ id: 'template' as StepId, title: 'Select Template', icon: <BookmarkPlus size={20} color="#f59e0b" /> }]
-      : method === 'ai' 
+    ...(method === 'ai' 
       ? [{ id: 'dispatch' as StepId, title: 'Dispatch Text', icon: <Truck size={20} color="#f59e0b" /> }]
       : [{ id: 'details' as StepId, title: 'Load Details', icon: <MapPin size={20} color="#f59e0b" /> }]
     ),
@@ -132,26 +122,7 @@ export default function AddLoadScreen() {
         Alert.alert('Error', 'Please select a method');
         return;
       }
-      if (method === 'template') {
-        setCurrentStep('template');
-      } else {
-        setCurrentStep(method === 'ai' ? 'dispatch' : 'details');
-      }
-    } else if (currentStep === 'template') {
-      if (!selectedTemplateId) {
-        Alert.alert('Error', 'Please select a template');
-        return;
-      }
-      const template = templates.find(t => t.id === selectedTemplateId);
-      if (template) {
-        console.log('[AddLoad] Applying template:', template.name);
-        setOrigin(template.origin);
-        setDestination(template.destination);
-        setClaimedMiles(template.claimedMiles.toString());
-        setPayAmount('');
-        incrementTemplateUsage(template.id);
-      }
-      setCurrentStep('details');
+      setCurrentStep(method === 'ai' ? 'dispatch' : 'details');
     } else if (currentStep === 'dispatch') {
       await handleParseDispatch();
     } else if (currentStep === 'details') {
@@ -188,16 +159,6 @@ export default function AddLoadScreen() {
     }
 
     console.log('[AddLoad] Submitting load');
-
-    if (saveAsTemplate && templateName.trim()) {
-      console.log('[AddLoad] Saving as template:', templateName);
-      addTemplate({
-        name: templateName.trim(),
-        origin: origin.trim(),
-        destination: destination.trim(),
-        claimedMiles: Number(claimedMiles),
-      });
-    }
     
     const loadId = addLoad({
       dispatcherText: method === 'ai' ? dispatcherText.trim() : `Manual: ${origin} → ${destination}`,
@@ -316,28 +277,6 @@ export default function AddLoadScreen() {
             </View>
           )}
         </TouchableOpacity>
-
-        {templates.length > 0 && (
-          <TouchableOpacity
-            style={[styles.methodCard, method === 'template' && styles.methodCardActive]}
-            onPress={() => setMethod('template')}
-          >
-            <View style={styles.methodIcon}>
-              <BookmarkPlus size={32} color={method === 'template' ? '#f59e0b' : '#64748b'} />
-            </View>
-            <Text style={[styles.methodTitle, method === 'template' && styles.methodTitleActive]}>
-              From Template
-            </Text>
-            <Text style={styles.methodDescription}>
-              Use a saved template for frequent routes ({templates.length} available)
-            </Text>
-            {method === 'template' && (
-              <View style={styles.selectedBadge}>
-                <Check size={16} color="#ffffff" />
-              </View>
-            )}
-          </TouchableOpacity>
-        )}
       </View>
     </View>
   );
@@ -560,71 +499,10 @@ export default function AddLoadScreen() {
     </View>
   );
 
-  const renderTemplateStep = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.header}>
-        <BookmarkPlus size={32} color="#f59e0b" />
-        <Text style={styles.title}>Select a Template</Text>
-        <Text style={styles.subtitle}>Choose from your saved routes</Text>
-      </View>
-
-      <View style={styles.templateList}>
-        {(recentTemplates.length > 0 ? recentTemplates : templates.slice(0, 10)).map(template => (
-          <TouchableOpacity
-            key={template.id}
-            style={[
-              styles.templateOption,
-              selectedTemplateId === template.id && styles.templateOptionActive,
-            ]}
-            onPress={() => setSelectedTemplateId(template.id)}
-          >
-            <View style={styles.templateOptionContent}>
-              <View style={styles.templateOptionHeader}>
-                <Text style={[
-                  styles.templateOptionName,
-                  selectedTemplateId === template.id && styles.templateOptionNameActive,
-                ]}>
-                  {template.name}
-                </Text>
-                {selectedTemplateId === template.id && (
-                  <View style={styles.templateCheckBadge}>
-                    <Check size={14} color="#ffffff" />
-                  </View>
-                )}
-              </View>
-              <View style={styles.templateOptionRoute}>
-                <Text style={styles.templateOptionText} numberOfLines={1}>
-                  {template.origin} → {template.destination}
-                </Text>
-              </View>
-              <View style={styles.templateOptionDetails}>
-                <Text style={styles.templateOptionSubtext}>{template.claimedMiles} mi</Text>
-                {template.useCount > 0 && (
-                  <Text style={styles.templateOptionSubtext}>• Used {template.useCount}x</Text>
-                )}
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-
-        {templates.length > 10 && (
-          <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => router.push('/templates')}
-          >
-            <Text style={styles.viewAllText}>View All Templates ({templates.length})</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  );
-
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 'method':
         return renderMethodStep();
-      case 'template':
-        return renderTemplateStep();
       case 'dispatch':
         return renderDispatchStep();
       case 'details':
@@ -975,75 +853,5 @@ const styles = StyleSheet.create({
     color: '#f59e0b',
     fontSize: 16,
     fontWeight: '700' as const,
-  },
-  templateList: {
-    gap: 12,
-  },
-  templateOption: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#334155',
-  },
-  templateOptionActive: {
-    borderColor: '#f59e0b',
-    backgroundColor: '#1e293b',
-  },
-  templateOptionContent: {
-    gap: 8,
-  },
-  templateOptionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  templateOptionName: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#f1f5f9',
-    flex: 1,
-  },
-  templateOptionNameActive: {
-    color: '#f59e0b',
-  },
-  templateCheckBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#f59e0b',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  templateOptionRoute: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  templateOptionText: {
-    fontSize: 14,
-    color: '#cbd5e1',
-    fontWeight: '500' as const,
-  },
-  templateOptionDetails: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  templateOptionSubtext: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '500' as const,
-  },
-  viewAllButton: {
-    padding: 16,
-    alignItems: 'center',
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  viewAllText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#f59e0b',
   },
 });

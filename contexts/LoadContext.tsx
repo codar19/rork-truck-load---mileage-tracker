@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Load, LoadCalculations, MileageAlert, LoadStatus } from '@/types/load';
+import { Load, LoadCalculations, MileageAlert } from '@/types/load';
 import { MOCK_LOADS } from '@/mocks/loads';
 
 const STORAGE_KEY = 'loads';
@@ -227,28 +227,6 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     };
   }, []);
 
-  const bulkDeleteLoads = useCallback((loadIds: string[]) => {
-    console.log('[LoadContext] Bulk deleting loads:', loadIds.length);
-    const updated = loads.filter(load => !loadIds.includes(load.id));
-    saveLoads(updated);
-  }, [loads, saveLoads]);
-
-  const bulkUpdateStatus = useCallback((loadIds: string[], newStatus: LoadStatus) => {
-    console.log('[LoadContext] Bulk updating status for loads:', loadIds.length, 'to', newStatus);
-    const updated = loads.map(load => 
-      loadIds.includes(load.id) ? { ...load, status: newStatus } : load
-    );
-    saveLoads(updated);
-  }, [loads, saveLoads]);
-
-  const bulkAssignDriver = useCallback((loadIds: string[], driverId: string) => {
-    console.log('[LoadContext] Bulk assigning driver:', driverId, 'to loads:', loadIds.length);
-    const updated = loads.map(load => 
-      loadIds.includes(load.id) ? { ...load, driverId } : load
-    );
-    saveLoads(updated);
-  }, [loads, saveLoads]);
-
   return useMemo(() => ({
     loads,
     addLoad,
@@ -257,21 +235,6 @@ export const [LoadProvider, useLoads] = createContextHook(() => {
     getLoad,
     calculateLoadMetrics,
     calculateMileageAlerts,
-    bulkDeleteLoads,
-    bulkUpdateStatus,
-    bulkAssignDriver,
     isLoading: loadsQuery.isLoading,
-  }), [
-    loads,
-    addLoad,
-    updateLoad,
-    deleteLoad,
-    getLoad,
-    calculateLoadMetrics,
-    calculateMileageAlerts,
-    bulkDeleteLoads,
-    bulkUpdateStatus,
-    bulkAssignDriver,
-    loadsQuery.isLoading,
-  ]);
+  }), [loads, addLoad, updateLoad, deleteLoad, getLoad, calculateLoadMetrics, calculateMileageAlerts, loadsQuery.isLoading]);
 });

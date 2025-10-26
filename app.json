@@ -15,22 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.truck-load-miles-tracker",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
-      }
+      "bundleIdentifier": "app.rork.truck-load-miles-tracker"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.truck_load_miles_tracker",
-      "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO"
-      ]
+      "package": "app.rork.truck_load_miles_tracker"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -40,14 +32,6 @@
         "expo-router",
         {
           "origin": "https://rork.com/"
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
         }
       ]
     ],
