@@ -43,12 +43,15 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
 
   const { mutate } = saveMutation;
 
+  const [hasInitialized, setHasInitialized] = useState(false);
+
   useEffect(() => {
-    if (promptsQuery.data !== undefined) {
+    if (promptsQuery.data !== undefined && counterQuery.data !== undefined && !hasInitialized) {
       const prompts = promptsQuery.data;
+      const currentCounter = counterQuery.data;
       
       const autoPrompts: ExecutedPrompt[] = [];
-      let maxPromptNumber = 0;
+      let maxPromptNumber = currentCounter - 1;
 
       // Auto-mark prompt #1 (Load Management) as executed if not already
       const hasPrompt1 = prompts.some((p: ExecutedPrompt) => p.featureId === '2' && p.type === 'done');
@@ -116,15 +119,12 @@ export const [ExecutedPromptsProvider, useExecutedPrompts] = createContextHook((
         setPromptCounter(newCounter);
       } else {
         setExecutedPrompts(prompts);
+        setPromptCounter(currentCounter);
       }
+      
+      setHasInitialized(true);
     }
-  }, [promptsQuery.data]);
-
-  useEffect(() => {
-    if (counterQuery.data !== undefined) {
-      setPromptCounter(counterQuery.data);
-    }
-  }, [counterQuery.data]);
+  }, [promptsQuery.data, counterQuery.data, hasInitialized]);
 
   const addExecutedPrompt = useCallback(async (prompt: Omit<ExecutedPrompt, 'id' | 'executedAt' | 'promptNumber'>) => {
     console.log('[ExecutedPromptsContext] Adding executed prompt:', prompt.featureTitle);
